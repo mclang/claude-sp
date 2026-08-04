@@ -2,68 +2,117 @@
 set -euo pipefail
 
 SCRIPT_DIR=$(dirname "$(realpath "$BASH_SOURCE")")
-
-IMAGE="claude-sp"
 CONTAINER_PREFIX="Claude-SP"
+DOCKER_IMAGE="claude-sp"
+CLAUDE_STATE_DIR="$HOME/.local/share/$DOCKER_IMAGE"
+CLAUDE_CONF_FILE="$CLAUDE_STATE_DIR/.claude.json"       # Shared config/state incl. user-scoped MCP registrations
+CLAUDE_CRED_FILE="$CLAUDE_STATE_DIR/.credentials.json"  # Shared OAuth tokens written by `claude login`
+TARGET_PROJECT_DIR=""
 
-usage() {
-    echo "Usage: $(basename "$0") [--build] <project-dir>"
-    echo ""
-    echo "  --build, -b   Force rebuild of the Docker image"
-    echo "  <project-dir> Directory to mount as the Claude Code project"
+if (( "${BASH_VERSINFO[0]}" < 4 )); then
+    echo "ERROR: bash 4+ required (current: $BASH_VERSION)"
     exit 1
+fi
+
+declare -A DOCKER_VOLUMES=(
+    ["${DOCKER_IMAGE}_claude-data"]="/home/claude/.claude"          # Claude Code state: settings, MCP config, session transcripts
+    ["${DOCKER_IMAGE}_mempalace-data"]="/home/claude/.mempalace"    # MemPalace memory palace (persistent AI memory)
+    ["${DOCKER_IMAGE}_chroma-data"]="/home/claude/.cache/chroma"    # ChromaDB vector store used by MemPalace
+    ["${DOCKER_IMAGE}_semble-cache"]="/home/claude/.cache/semble"   # Semble code-search indexes (keyed by repo path)
+    ["${DOCKER_IMAGE}_hf-cache"]="/home/claude/.cache/huggingface"  # HuggingFace model cache (semble embedding model ~300MB)
+)
+
+
+claude_sp_build() {
+    echo ""
+    echo "BUILDING 'Claude Sandboxed Plus' (image name: '$DOCKER_IMAGE') ..."
+    docker build \
+        --build-arg UID="$(id -u)" \
+        --build-arg GID="$(id -u)" \
+        -t "$DOCKER_IMAGE" \
+        "$SCRIPT_DIR"
+    echo "==> DONE"
+    echo ""
 }
 
-BUILD=0
-PROJECT_DIR=""
+claude_sp_clean() {
+    echo ""
+    echo "DELETING 'Claude Sandboxed Plus' image and related volume mounts..."
+    docker image rm "$DOCKER_IMAGE" || true
+    for vol_name in "${!DOCKER_VOLUMES[@]}"; do
+        docker volume rm "$vol_name" || true
+    done
+    echo "==> DONE"
+    echo "Run 'rm -rf $CLAUDE_STATE_DIR' manually to delete also Claude config and login"
+    echo ""
+    exit 0
+}
+
+claude_sp_usage() {
+    echo ""
+    echo "USAGE: $(basename "$0") [--build|--clean] <project-dir>"
+    echo ""
+    echo "  --build, -b   Force rebuild of the Docker image"
+    echo "  --clean, -c   Delete Docker image and mount volumes"
+    echo "  <project-dir> Directory to mount as the Claude Code project"
+    echo ""
+    exit 0
+}
+
 
 for arg in "$@"; do
     case "$arg" in
-        --build|-b) BUILD=1 ;;
-        -h|--help) usage ;;
+        --build|-b) claude_sp_build ;;
+        --clean|-c) claude_sp_clean ;;
+        --help|-h)  claude_sp_usage ;;
         -*)
-            echo "Unknown option: $arg"
-            usage
+            echo "ERROR: Unknown option: '$arg'"
+            claude_sp_usage
             ;;
         *)
-            if [[ -n "$PROJECT_DIR" ]]; then
-                echo "Error: only one project directory allowed"
-                usage
+            if [[ -n "$TARGET_PROJECT_DIR" ]]; then
+                echo "ERROR: only one project directory allowed"
+                claude_sp_usage
             fi
-            PROJECT_DIR="$arg"
+            TARGET_PROJECT_DIR="$arg"
             ;;
     esac
 done
 
-[[ -z "$PROJECT_DIR" ]] && { usage; }
-[[ -d "$PROJECT_DIR" ]] || { echo "Error: '$PROJECT_DIR' is not a directory"; exit 1; }
+[[ -z "$TARGET_PROJECT_DIR" ]] && { claude_sp_usage; }
+[[ -d "$TARGET_PROJECT_DIR" ]] || { echo "ERROR: '$TARGET_PROJECT_DIR' is not a directory"; exit 1; }
 
-PROJECT_DIR=$(realpath "$PROJECT_DIR")
-PROJECT_NAME=$(basename "$PROJECT_DIR" | tr -cs 'a-zA-Z0-9_.-' '-')
+# Resolve absolute project directory path and Docker-safe container/mount name using `tr`.
+# Strip trailing `-` from the name that `tr` makes from `basename`'s trailing newline.
+TARGET_PROJECT_DIR=$(realpath "$TARGET_PROJECT_DIR")
+TARGET_PROJECT_NAME=$(basename "$TARGET_PROJECT_DIR" | tr -cs 'a-zA-Z0-9_.-' '-')
+TARGET_PROJECT_NAME="${TARGET_PROJECT_NAME%-}"
 
-if [[ "$BUILD" -eq 1 ]] || ! docker image inspect "$IMAGE" &>/dev/null; then
-    echo "Building '$IMAGE' ..."
-    docker build \
-        --build-arg UID="$(id -u)" \
-        --build-arg GID="$(id -g)" \
-        -t "$IMAGE" \
-        "$SCRIPT_DIR"
-fi
+# Build Docker image if it does not exist already (needs to be below above project dir checks!):
+docker image inspect "$DOCKER_IMAGE" &>/dev/null || claude_sp_build
 
-# Auth file lives on the host, shared across all projects
-CLAUDE_AUTH="$HOME/.local/share/$IMAGE/.claude.json"
-mkdir -p "$(dirname "$CLAUDE_AUTH")"
-[[ -f "$CLAUDE_AUTH" ]] || touch "$CLAUDE_AUTH"
+# Initialize Claude state files.
+# They MUST exist BEFORE `docker run`, otherwise Docker creates them as directories.
+# Restrictive permissions because both hold sensitive data.
+mkdir -p "$CLAUDE_STATE_DIR"
+for FL in "$CLAUDE_CONF_FILE" "$CLAUDE_CRED_FILE"; do
+    [[ -f "$FL" ]] || echo '{}' > "$FL"
+    chmod 600 "$FL"
+done
+
+NAMED_VOLUME_ARGS=()
+for VNAME in "${!DOCKER_VOLUMES[@]}"; do
+    NAMED_VOLUME_ARGS+=(-v "${VNAME}:${DOCKER_VOLUMES[$VNAME]}")
+done
 
 exec docker run --rm -it \
-    --name "${CONTAINER_PREFIX}-${PROJECT_NAME}" \
+    --name "${CONTAINER_PREFIX}-${TARGET_PROJECT_NAME}" \
     --cap-drop ALL \
     --security-opt no-new-privileges:true \
-    -v "${PROJECT_DIR}:/workspace/${PROJECT_NAME}" \
-    -v "${CLAUDE_AUTH}:/home/claude/.claude.json" \
-    -v "${IMAGE}-claude-data:/home/claude/.claude" \
-    -v "${IMAGE}-mempalace:/home/claude/.mempalace" \
-    -v "${IMAGE}-chroma:/home/claude/.cache/chroma" \
-    -w "/workspace/${PROJECT_NAME}" \
-    "$IMAGE"
+    -v "${TARGET_PROJECT_DIR}:/workspace/${TARGET_PROJECT_NAME}" \
+    -v "${CLAUDE_CONF_FILE}:/home/claude/.claude.json" \
+    -v "${CLAUDE_CRED_FILE}:/home/claude/.claude/.credentials.json" \
+    "${NAMED_VOLUME_ARGS[@]}" \
+    -w "/workspace/${TARGET_PROJECT_NAME}" \
+    "$DOCKER_IMAGE"
 

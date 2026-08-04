@@ -1,1 +1,4 @@
-.sandbox/
+# MemPalace per-project files (issue #185)
+entities.json
+mempalace.yaml
+
