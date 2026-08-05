@@ -7,6 +7,7 @@ DOCKER_IMAGE="claude-sp"
 CLAUDE_STATE_DIR="$HOME/.local/share/$DOCKER_IMAGE"
 CLAUDE_CONF_FILE="$CLAUDE_STATE_DIR/.claude.json"       # Shared config/state incl. user-scoped MCP registrations
 CLAUDE_CRED_FILE="$CLAUDE_STATE_DIR/.credentials.json"  # Shared OAuth tokens written by `claude login`
+GIT_XDG_CONF_DIR="${HOME}/.config/git"
 TARGET_PROJECT_DIR=""
 
 if (( "${BASH_VERSINFO[0]}" < 4 )); then
@@ -19,7 +20,7 @@ declare -A DOCKER_VOLUMES=(
     ["${DOCKER_IMAGE}_mempalace-data"]="/home/claude/.mempalace"    # MemPalace memory palace (persistent AI memory)
     ["${DOCKER_IMAGE}_chroma-data"]="/home/claude/.cache/chroma"    # ChromaDB vector store used by MemPalace
     ["${DOCKER_IMAGE}_semble-cache"]="/home/claude/.cache/semble"   # Semble code-search indexes (keyed by repo path)
-    ["${DOCKER_IMAGE}_hf-cache"]="/home/claude/.cache/huggingface"  # HuggingFace model cache (semble embedding model ~300MB)
+    ["${DOCKER_IMAGE}_hf-cache"]="/home/claude/.cache/huggingface"  # HuggingFace model cache (semble embedding model ~60-80MB)
 )
 
 
@@ -109,10 +110,11 @@ exec docker run --rm -it \
     --name "${CONTAINER_PREFIX}-${TARGET_PROJECT_NAME}" \
     --cap-drop ALL \
     --security-opt no-new-privileges:true \
-    -v "${TARGET_PROJECT_DIR}:/workspace/${TARGET_PROJECT_NAME}" \
     -v "${CLAUDE_CONF_FILE}:/home/claude/.claude.json" \
     -v "${CLAUDE_CRED_FILE}:/home/claude/.claude/.credentials.json" \
+    -v "${GIT_XDG_CONF_DIR}:/home/claude/.config/git:ro" \
     "${NAMED_VOLUME_ARGS[@]}" \
+    -v "${TARGET_PROJECT_DIR}:/workspace/${TARGET_PROJECT_NAME}" \
     -w "/workspace/${TARGET_PROJECT_NAME}" \
     "$DOCKER_IMAGE"
 

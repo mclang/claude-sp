@@ -63,13 +63,14 @@ alias mount='mount | grep -Ev "^(overlay|tmpfs|proc|sysfs|devtmpfs|devpts|cgroup
 EOF
 
 # Bake semble's embedding model into the image to fix corrupted downloads during first run.
-# This works with mounted data volumes because fresh (empty) named volumes are Needed
+# This works with mounted data volumes because fresh (empty) named volumes are seeded
 # by Docker with the image content at the mount path, so the model is shared between
 # projects and survives `--clean`.
 RUN python3 -c "from semble.utils import resolve_model_name; from model2vec import StaticModel; StaticModel.from_pretrained(resolve_model_name())"
 
 # Pre-create volume mount points so Docker initializes named volumes with right owner (claude)
-RUN mkdir -p "$HOME/.claude" "$HOME/.mempalace" "$HOME/.cache/chroma" "$HOME/.cache/semble" "$HOME/.cache/huggingface"
+# Keep these in line with what is used in `entrypoint.sh` and `run.sh` scripts!
+RUN mkdir -p "$HOME/.claude" "$HOME/.config" "$HOME/.mempalace" "$HOME/.cache/chroma" "$HOME/.cache/semble" "$HOME/.cache/huggingface"
 
 COPY --chown=claude:claude --chmod=755 assets/entrypoint.sh "$HOME/entrypoint.sh"
 
