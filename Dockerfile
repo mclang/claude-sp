@@ -59,10 +59,20 @@ alias ll='ls -ho -F --color=auto --group-directories-first'
 alias mount='mount | grep -Ev "^(overlay|tmpfs|proc|sysfs|devtmpfs|devpts|cgroup|mqueue|shm)"'
 EOF
 
+# Bake semble's embedding model into the image to fix corrupted downloads during first run.
+# This works with mounted data volumes because fresh (empty) named volumes are Needed
+# by Docker with the image content at the mount path, so the model is shared between
+# projects and survives `--clean`.
+RUN python3 -c "from semble.utils import resolve_model_name; from model2vec import StaticModel; StaticModel.from_pretrained(resolve_model_name())"
+
 # Pre-create volume mount points so Docker initializes named volumes with right owner (claude)
 RUN mkdir -p "$HOME/.claude" "$HOME/.mempalace" "$HOME/.cache/chroma" "$HOME/.cache/semble" "$HOME/.cache/huggingface"
 
-COPY --chown=claude:claude --chmod=755 entrypoint.sh "$HOME/entrypoint.sh"
+COPY --chown=claude:claude --chmod=755 assets/entrypoint.sh "$HOME/entrypoint.sh"
+
+# User-level guidance for using semble/mempalace; seeds fresh `claude-data` volumes.
+# Loaded by Claude Code in EVERY project alongside the project's own CLAUDE.md.
+COPY --chown=claude:claude assets/CLAUDE-container-user.md "$HOME/.claude/CLAUDE.md"
 
 WORKDIR /workspace
 
