@@ -14,6 +14,9 @@ RUN apt-get update \
         bash \
         curl \
         git \
+        jq \
+        procps \
+        ripgrep \
         sqlite3 \
         build-essential \
     && pip install --no-cache-dir "semble[mcp]" mempalace \
