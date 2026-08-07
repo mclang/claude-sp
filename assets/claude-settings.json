@@ -1,0 +1,11 @@
+{
+  "cleanupPeriodDays": 90,
+  "permissions": {
+    "allow": [
+      "mcp__semble",
+      "mcp__mempalace",
+      "Bash(semble:*)",
+      "Bash(mempalace:*)"
+    ]
+  }
+}

@@ -78,6 +78,9 @@ COPY --chown=claude:claude --chmod=755 assets/entrypoint.sh "$HOME/entrypoint.sh
 # Loaded by Claude Code in EVERY project alongside the project's own CLAUDE.md.
 COPY --chown=claude:claude assets/CLAUDE-container-user.md "$HOME/.claude/CLAUDE.md"
 
+# User-level permissions so semble/mempalace MCP tools and CLI commands run without prompts
+COPY --chown=claude:claude assets/claude-settings.json "$HOME/.claude/settings.json"
+
 WORKDIR /workspace
 
 ENTRYPOINT ["/home/claude/entrypoint.sh"]
