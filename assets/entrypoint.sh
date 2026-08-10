@@ -5,9 +5,9 @@ set -euo pipefail
 # Bump version to force re-configuration on existing containers (e.g. when adding a new MCP server).
 # NOTE: Bumping version does not help if CHANGING existing registrations!
 # ==> delete `.claude.json` or run `claude mcp remove <name>` to start fresh.
-MCP_CONFIGURED_MARKER="$HOME/.claude/.mcp-configured-v1"
+CLAUDE_MCP_CONFIGURED="$HOME/.claude/.mcp-configured-v1"
 
-MEMPALACE_SHARED="$HOME/.mempalace/palace"
+MEMPALACE_PALACE_DIR="$HOME/.mempalace/palace"
 
 configure_mcp() {
     # NOTE: declared separately because `local x=$(cmd)` would mask cmd's exit status (shellcheck SC2155)
@@ -15,17 +15,17 @@ configure_mcp() {
     mcp_servers=$(claude mcp list)
     # `--scope user` registers the servers for ALL projects; default `local` scope would be per-project only
     echo "$mcp_servers" | grep -q "^semble:"    || claude mcp add --scope user semble semble
-    echo "$mcp_servers" | grep -q "^mempalace:" || claude mcp add --scope user mempalace mempalace-mcp -- --palace "$MEMPALACE_SHARED"
-    touch "$MCP_CONFIGURED_MARKER"
+    echo "$mcp_servers" | grep -q "^mempalace:" || claude mcp add --scope user mempalace mempalace-mcp -- --palace "$MEMPALACE_PALACE_DIR"
+    touch "$CLAUDE_MCP_CONFIGURED"
 }
 
-[[ -f "$MCP_CONFIGURED_MARKER" ]] || configure_mcp
+[[ -f "$CLAUDE_MCP_CONFIGURED" ]] || configure_mcp
 
-# Initialize MemPalace for the current project if not yet tracked (`mempalace init` creates `mempalace.yaml`).
-# - `mempalace.yaml`: Lives in project dir, survives `--clean`
-# - `chroma.sqlite3`: Lives in MemPalace data volume, deleted when `--clean` is run.
+# Initialize MemPalace for the current project if not yet tracked.
+# - `mempalace.yaml`: Lives in project dir, survives `--clean` (created by `mempalace init`)
+# - `chroma.sqlite3`: Lives in MemPalace data volume, deleted when `--clean` is run (created during first 'mining' operation)
 # ==> Run `mempalace init` if EITHER file is missing
-[[ -f "$PWD/mempalace.yaml" && -f "${MEMPALACE_SHARED}/chroma.sqlite3" ]] || mempalace init --yes --auto-mine --no-llm "$PWD"
+[[ -f "$PWD/mempalace.yaml" && -f "${MEMPALACE_PALACE_DIR}/chroma.sqlite3" ]] || mempalace init --yes --auto-mine --no-llm "$PWD"
 
 exec "$@"
 

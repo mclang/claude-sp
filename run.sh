@@ -27,6 +27,7 @@ declare -A DOCKER_VOLUMES=(
 claude_sp_build() {
     echo ""
     echo "BUILDING 'Claude Sandboxed Plus' (image name: '$DOCKER_IMAGE') ..."
+    # NOTE: GID uses `id -u` on purpose b/c on macOS `id -g` (20, staff) collides with image's `dialout` group
     docker build \
         --build-arg UID="$(id -u)" \
         --build-arg GID="$(id -u)" \
@@ -92,7 +93,7 @@ TARGET_PROJECT_NAME="${TARGET_PROJECT_NAME%-}"
 # Build Docker image if it does not exist already (needs to be below above project dir checks!):
 docker image inspect "$DOCKER_IMAGE" &>/dev/null || claude_sp_build
 
-# Initialize Claude state files.
+# Initialize HOST side Claude state files.
 # They MUST exist BEFORE `docker run`, otherwise Docker creates them as directories.
 # Restrictive permissions because both hold sensitive data.
 mkdir -p "$CLAUDE_STATE_DIR"
