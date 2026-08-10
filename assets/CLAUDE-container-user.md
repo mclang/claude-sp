@@ -11,6 +11,8 @@ project-specific facts in a per-project `CLAUDE.md` instead.
 - Use ripgrep/`grep` instead for an **exact known string or symbol** — cheaper and exact.
 - Skip Semble when you already know the file path (just read it) and for code you
   changed this session (the index can lag — read directly).
+- For broad or exploratory searches, delegate to the `semble-search` sub-agent —
+  it keeps bulky search results out of the main context.
 
 ## Durable memory — MemPalace is the single source
 - MemPalace holds cross-session facts: decisions + their rationale, conventions,

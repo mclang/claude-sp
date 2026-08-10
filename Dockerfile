@@ -76,6 +76,10 @@ RUN mkdir -p "$HOME/.claude" "$HOME/.config" "$HOME/.mempalace" "$HOME/.cache/ch
 # projects and survives `--clean`.
 RUN python3 -c "from semble.utils import resolve_model_name; from model2vec import StaticModel; StaticModel.from_pretrained(resolve_model_name())"
 
+# Generate semble's search sub-agent (`~/.claude/agents/semble-search.md`).
+# Note that the MCP registration stays in `entrypoint.sh` where also mempalace is registered.
+RUN semble install --agent claude --type subagent --yes
+
 
 ### Extra one-time Claude setup
 

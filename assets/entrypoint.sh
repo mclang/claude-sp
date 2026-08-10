@@ -13,8 +13,9 @@ configure_mcp() {
     # NOTE: declared separately because `local x=$(cmd)` would mask cmd's exit status (shellcheck SC2155)
     local mcp_servers
     mcp_servers=$(claude mcp list)
-    # `--scope user` registers the servers for ALL projects; default `local` scope would be per-project only
-    echo "$mcp_servers" | grep -q "^semble:"    || claude mcp add --scope user semble semble
+    # `--scope user` registers the servers for ALL projects; default `local` scope would be per-project only.
+    # Semble `--content all` indexes also docs/config files, not just code (default `--content code`).
+    echo "$mcp_servers" | grep -q "^semble:"    || claude mcp add --scope user semble semble -- --content all
     echo "$mcp_servers" | grep -q "^mempalace:" || claude mcp add --scope user mempalace mempalace-mcp -- --palace "$MEMPALACE_PALACE_DIR"
     touch "$CLAUDE_MCP_CONFIGURED"
 }
