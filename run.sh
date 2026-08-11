@@ -46,6 +46,7 @@ claude_sp_clean() {
     done
     echo "==> DONE"
     echo "Run 'rm -rf $CLAUDE_STATE_DIR' manually to delete also Claude config and login"
+    echo "Delete stale 'mempalace.yaml' files from project dirs to run 'mempalace mine' again"
     echo ""
     exit 0
 }

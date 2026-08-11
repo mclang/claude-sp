@@ -23,9 +23,12 @@ configure_mcp() {
 [[ -f "$CLAUDE_MCP_CONFIGURED" ]] || configure_mcp
 
 # Initialize MemPalace for the current project if not yet tracked.
-# - `mempalace.yaml`: Lives in project dir, survives `--clean` (created by `mempalace init`)
-# - `chroma.sqlite3`: Lives in MemPalace data volume, deleted when `--clean` is run (created during first 'mining' operation)
-# ==> Run `mempalace init` if EITHER file is missing
+# - `mempalace.yaml`: Lives in project dir, survives `--clean`
+# - `chroma.sqlite3`: Lives in MemPalace data volume and gets thus deleted when `--clean` is run
+#
+# NOTE:
+# - A project with a stale `mempalace.yaml` + an already-populated palace skips mining!
+# - Memory still works but starts empty and fills only through Claude's own writes.
 [[ -f "$PWD/mempalace.yaml" && -f "${MEMPALACE_PALACE_DIR}/chroma.sqlite3" ]] || mempalace init --yes --auto-mine --no-llm "$PWD"
 
 exec "$@"
