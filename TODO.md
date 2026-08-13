@@ -16,14 +16,11 @@
   - Hook would run/remind the store mechanically; could also cover `mine --mode convos` + `compress`
   - Verdict: WAIT — if the palace doesn't accumulate decisions after weeks of real use, wire it
 
-- Auto-resume previous session on container start
-  - CONFIRMED: `claude --continue` already resumes the project's latest session across container restarts
-  - Remaining idea is discoverability only: e.g. print a "resume with claude --continue" hint at shell start
-
 
 ## Hardening (from in-container validation review, 2026-07-15)
 
 - Pin supply chain: base image digest, `pip install semble==X mempalace==Y` (unpinned already caused the `-v2` model drift)
+- CVE-scan the built image with [Grype](https://github.com/anchore/grype) (out-of-image step, most useful once deps are pinned)
 - Resource limits in `docker run`: `--memory`, `--pids-limit`, `--cpus`
 - Reconsider secret ingest on BOTH paths into the *shared* store — semble `--content all` AND
   `mempalace init --auto-mine` pull raw file contents in, so `.env`/config secrets become recallable
@@ -38,7 +35,7 @@
   - Context compression proxy/MCP: compresses tool outputs before they reach the model (~15-20% savings for coding agents)
   - AGAINST adding: sits as man-in-the-middle on the authenticated Claude API stream (proxy mode); compression
     bugs would corrupt context in hard-to-debug ways; overlaps what semble/mempalace already attack at source
-  - Verdict: NOT NOW — if token usage becomes a measured pain, evaluate separately on one host first, never baked for whole team
+  - STATUS: available OPT-IN, built via `run.sh --build --with-headroom`. Routing still manual (`headroom wrap -- claude`)
 
 - https://github.com/mukul975/Anthropic-Cybersecurity-Skills
   - 817 security skills (agentskills.io standard); NOT Anthropic despite the name — independent community project (Apache 2.0)

@@ -54,6 +54,7 @@ shared across all projects and survive `./run.sh --clean`.
 
 Options:
 - `--build`/`-b`: force-rebuilds the image
+- `--with-headroom`/`-H`: include the [Headroom](https://github.com/headroomlabs-ai/headroom) proxy in the build. Pair it with `--build`!
 - `--clean`/`-c`: deletes image and volumes.
 
 Sessions persist per project until named volumes are deleted with `--clean`.
@@ -75,6 +76,7 @@ but starts empty. Delete the file or run `mempalace mine` inside the container t
 | `claude-sp_chroma-data` | `~/.cache/chroma` | ChromaDB vector store |
 | `claude-sp_semble-cache` | `~/.cache/semble` | Semble code-search indexes |
 | `claude-sp_hf-cache` | `~/.cache/huggingface` | HuggingFace model cache |
+| `claude-sp_headroom-data` | `~/.headroom` | Headroom savings ledger + proxy logs (only populated when built with `--with-headroom`) |
 
 
 ## Security

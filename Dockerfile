@@ -60,11 +60,25 @@ function claude() {
 alias la='ls -A  -F --color=auto --group-directories-first'
 alias ll='ls -ho -F --color=auto --group-directories-first'
 alias mount='mount | grep -Ev "^(overlay|tmpfs|proc|sysfs|devtmpfs|devpts|cgroup|mqueue|shm)"'
+
+# Notify user if Headroom Proxy is available.
+# Enable "Output token reduction" with 10% holdout control group to get better 'headroom output-savings' estimations.
+# NOTE: Using 'headroom wrap' bypasses above 'claude' function !!!
+if command -v headroom &>/dev/null; then
+    alias hrc='headroom wrap -- claude'
+    export HEADROOM_OUTPUT_SHAPER=1
+    export HEADROOM_OUTPUT_HOLDOUT=0.1
+    echo "NOTE: This container includes 'Headroom Proxy' (https://github.com/headroomlabs-ai/headroom)"
+    echo "- Use it by starting claude session with 'headroom wrap -- claude <parameters>' (alias: 'hrc')"
+    echo "- Run 'headroom learn --verbosity --all --apply' ONCE after using headroom for a while to set verbosity baseline for output shaper"
+    echo "- Check performance and savings using 'headroom perf', 'headroom savings --days 30' and 'headroom output-savings'"
+    echo ""
+fi
 EOF
 
 # Pre-create CONTAINER side volume mount points so Docker initializes named volumes using right owner.
 # NOTE: Keep these in line with what is used in `entrypoint.sh` and `run.sh` scripts!
-RUN mkdir -p "$HOME/.claude" "$HOME/.config" "$HOME/.mempalace" "$HOME/.cache/chroma" "$HOME/.cache/semble" "$HOME/.cache/huggingface"
+RUN mkdir -p "$HOME/.claude" "$HOME/.config" "$HOME/.mempalace" "$HOME/.cache/chroma" "$HOME/.cache/semble" "$HOME/.cache/huggingface" "$HOME/.headroom"
 
 
 ### Extra one-time Semble setup
@@ -79,6 +93,13 @@ RUN python3 -c "from semble.utils import resolve_model_name; from model2vec impo
 # Generate semble's search sub-agent (`~/.claude/agents/semble-search.md`).
 # Note that the MCP registration stays in `entrypoint.sh` where also mempalace is registered.
 RUN semble install --agent claude --type subagent --yes
+
+
+### Install Headroom Proxy
+# - Opt-in by building the image with `./run.sh --build|-b --with-headroom|-H`
+# - Start claude via `headroom wrap -- claude [options]`
+ARG INSTALL_HEADROOM=0
+RUN if [ "$INSTALL_HEADROOM" = "1" ]; then pip install --user --no-cache-dir "headroom-ai[proxy,mcp]"; fi
 
 
 ### Extra one-time Claude setup
