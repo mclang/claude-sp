@@ -7,6 +7,7 @@ CLAUDE_STATE_DIR="$HOME/.local/share/$DOCKER_IMAGE"
 CLAUDE_CONF_FILE="$CLAUDE_STATE_DIR/.claude.json"       # Shared config/state incl. user-scoped MCP registrations
 CLAUDE_CRED_FILE="$CLAUDE_STATE_DIR/.credentials.json"  # Shared OAuth tokens written by `claude login`
 GIT_XDG_CONF_DIR="$HOME/.config/git"
+REBUILD_NO_CACHE=""
 INSTALL_HEADROOM=0
 WITH_HEADROOM_MARKER="$CLAUDE_STATE_DIR/.with-headroom" # Remember if last build was with Headroom (survives image loss)
 TARGET_PROJECT_DIR=""
@@ -30,7 +31,7 @@ claude_sp_build() {
     echo ""
     echo "BUILDING 'Claude Sandboxed Plus' (image name: '$DOCKER_IMAGE') ..."
     # NOTE: GID uses `id -u` on purpose b/c on macOS `id -g` (20, staff) collides with image's `dialout` group
-    docker build \
+    docker build ${REBUILD_NO_CACHE} \
         --build-arg UID="$(id -u)" \
         --build-arg GID="$(id -u)" \
         --build-arg INSTALL_HEADROOM="$INSTALL_HEADROOM" \
@@ -67,7 +68,8 @@ claude_sp_usage() {
     echo "USAGE: $(basename "$0") [--build|--clean|...] <project-dir>"
     echo "  --build, -b           Force rebuild of the Docker image"
     echo "  --clean, -c           Delete Docker image and ALL mount volumes"
-    echo "  --with-headroom, -H   Build image with Headroom proxy (use with '--build' - otherwise no-op!)"
+    echo "  --no-cache            Rebuild from scratch (--no-cache --pull) (use with '--build', otherwise no-op!)"
+    echo "  --with-headroom, -H   Build image with Headroom proxy (use with '--build', otherwise no-op!)"
     echo "  <project-dir>         Directory to mount as Claude 'workspace'"
     echo ""
     exit 0
@@ -78,6 +80,7 @@ claude_sp_usage() {
 for arg in "$@"; do
     case "$arg" in
         --with-headroom|-H) INSTALL_HEADROOM=1 ;;
+        --no-cache)         REBUILD_NO_CACHE="--no-cache --pull" ;;
     esac
 done
 
@@ -87,6 +90,7 @@ for arg in "$@"; do
         --clean|-c) claude_sp_clean ;;
         --help|-h)  claude_sp_usage ;;
         --with-headroom|-H) ;;
+        --no-cache) ;;
         -*)
             echo "ERROR: Unknown option: '$arg'"
             claude_sp_usage
