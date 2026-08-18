@@ -3,8 +3,9 @@
 set -euo pipefail
 
 # Bump version to force re-configuration on existing containers (e.g. when adding a new MCP server).
-# NOTE: Bumping version does not help if CHANGING existing registrations!
-# ==> delete `.claude.json` or run `claude mcp remove <name>` to start fresh.
+# NOTE: Bumping version does NOT help if CHANGING EXISTING registrations!
+# This is b/c the registrations live in the HOST `.claude.json` whereas this marker is on the `claude-data` VOLUME.
+# ==> clearing only ONE does NOTHING: Delete BOTH (or run `--clean`) to re-register from scratch.
 CLAUDE_MCP_CONFIGURED="$HOME/.claude/.mcp-configured-v1"
 
 MEMPALACE_PALACE_DIR="$HOME/.mempalace/palace"
