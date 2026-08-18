@@ -32,6 +32,10 @@ ARG UID=1000
 ARG GID=1000
 RUN groupadd -g "${GID}" claude && useradd -m -s "/bin/bash" -u "${UID}" -g "${GID}" claude
 
+# Create root-owned 'Managed Claude Code' policy directory for global 'CLAUDE.md' and deny
+# permissions which CANNOT be changed inside the container by ANY user.
+RUN mkdir -p "/etc/claude-code"
+
 # NOTE: changing `HOME` here requires also `ENTRYPOINT` change!
 ENV HOME="/home/claude"
 ENV PATH="$HOME/.local/bin:$PATH"
@@ -104,12 +108,17 @@ RUN if [ "$INSTALL_HEADROOM" = "1" ]; then pip install --user --no-cache-dir "he
 
 ### Extra one-time Claude setup
 
-# User-level guidance for using semble/mempalace.
-# Loaded by Claude Code in EVERY project alongside the project's own CLAUDE.md.
-COPY --chown=claude:claude assets/CLAUDE-container-user.md "$HOME/.claude/CLAUDE.md"
+# User-level permissions initialized so that semble/mempalace/... MCP tools and CLI commands run without annoying prompts.
+# NOTE: Mutable by the 'claude' user by design so that Claude Code can write runtime prefs here, e.g. `/model`.
+COPY --chown=claude:claude assets/home_dot-claude_settings.json "$HOME/.claude/settings.json"
 
-# User-level permissions so semble/mempalace MCP tools and CLI commands run without prompts
-COPY --chown=claude:claude assets/claude-settings.json "$HOME/.claude/settings.json"
+# Managed policy files
+# NOTES:
+# - root-owned and 444, thus outside of 'claude' users write capability
+# - Allow/Deny precedence: Managed > CLI args > Local > Project > User
+# - A managed 'deny' cannot be overridden by any lower tier
+COPY --chown=root:root --chmod=444 assets/etc_claude-code_CLAUDE.md             /etc/claude-code/CLAUDE.md
+COPY --chown=root:root --chmod=444 assets/etc_claude-code_managed-settings.json /etc/claude-code/managed-settings.json
 
 
 ### Finishing touches

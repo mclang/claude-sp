@@ -20,13 +20,14 @@ Created with the help of coffee, 8-bit gaming music, and Claude.
 
 ## Repo layout
 
-| File                              | Purpose                                                                          |
-|-----------------------------------|----------------------------------------------------------------------------------|
-| `Dockerfile`                      | Image: Python slim, Claude Code, semble + mempalace                              |
-| `run.sh`                          | Build/run/clean wrapper: Defines all volumes and mounts                          |
-| `assets/entrypoint.sh`            | Container startup: Registers MCP servers, auto-initializes MemPalace per project |
-| `assets/CLAUDE-container-user.md` | Seeds user-level `CLAUDE.md`: When Claude should reach for semble/mempalace, etc |
-| `assets/claude-settings.json`     | Seeds permissions: Allow Semble/Mempalace tools run without prompts, git limits  |
+| File                                          | Purpose                                                                          |
+|-----------------------------------------------|----------------------------------------------------------------------------------|
+| `Dockerfile`                                  | Image: Python slim, Claude Code, semble + mempalace                              |
+| `run.sh`                                      | Build/run/clean wrapper: Defines all volumes and mounts                          |
+| `assets/entrypoint.sh`                        | Container startup: Registers MCP servers, auto-initializes MemPalace per project |
+| `assets/etc_claude-code_CLAUDE.md`            | Managed guidance (immutable): semble/mempalace/memory discipline                 |
+| `assets/etc_claude-code_managed-settings.json`| Managed deny list (immutable): blocks `git commit/push/fetch/pull`               |
+| `assets/home_dot-claude_settings.json`        | User-tier permissions (mutable): semble/mempalace tools run without prompts      |
 
 
 ## First-time setup
@@ -77,8 +78,8 @@ but starts empty. Delete the file or run `mempalace mine` inside the container t
 ## What persists (named volumes)
 
 | Volume                    | Path in container     | Contents |
-|---------------------------|-----------------------|---|
-| `claude-sp_claude-data`   | `~/.claude`           | Settings + permissions, session transcripts, global `CLAUDE.md`, `semble-search` sub-agent, MCP-configured marker |
+|---------------------------|-----------------------|----------|
+| `claude-sp_claude-data`   | `~/.claude`           | Settings + permissions, session transcripts, `semble-search` sub-agent, MCP-configured marker |
 | `claude-sp_mempalace-data`| `~/.mempalace`        | MemPalace memory palace |
 | `claude-sp_chroma-data`   | `~/.cache/chroma`     | ChromaDB vector store |
 | `claude-sp_semble-cache`  | `~/.cache/semble`     | Semble code-search indexes |
@@ -90,9 +91,11 @@ but starts empty. Delete the file or run `mempalace mine` inside the container t
 
 - Runs as a non-privileged user (`claude`, UID from host; GID = UID as a private group)
 - `--cap-drop ALL` + `--security-opt no-new-privileges`
-- Bash wrapper allows `claude` to run only from a project root directly under `/workspace/`.
-  This is just a convenience guard against accidental misplacement, NOT a security boundary.
+- Bash wrapper allows `claude` to run only from a project root directly under `/workspace/`
+    - **NOTE:** This is just a convenience guard against accidental misplacement, **NOT a security boundary**!
 - Git config is mounted read-only, no SSH keys enter the container
+- Managed policy in `/etc/claude-code/` (root-owned, 444) that denies e.g `git commit/push/fetch/pull`
+- Same directory has `CLAUDE.md` that is not editable or overridable by `claude`
 
 **NOTE:** MemPalace memory, semble indexes, and login are shared across ALL projects!
 
@@ -114,7 +117,8 @@ but starts empty. Delete the file or run `mempalace mine` inside the container t
   (or run `--clean`, which wipes the whole `claude-data` volume) to force re-registration.
 - To drop and re-register ONE server, run `claude mcp remove <name>` inside the container, then also
   delete the marker so the entrypoint re-adds it on the next start.
-- Edits to the seeded `~/.claude` files reach an existing `claude-data` volume only via `--clean` or a manual copy
+- Edits to the seeded `settings.json` reach an existing `claude-data` volume only via `--clean` or a manual copy.
+  Managed policy (`/etc/claude-code/`) isn't volume-seeded at all — it always needs a rebuild.
 
 
 ## Verify
