@@ -107,18 +107,20 @@ but starts empty. Delete the file or run `mempalace mine` inside the container t
 ./run.sh --build <path-to-project>
 ```
 
-**NOTE:**
-- Full reset needs also `rm -rf ~/.local/share/claude-sp/`, which deletes claude login. This does **NOT**
-  reset MCP registrations by itself — see below.
-- The MCP servers are registered only once per `claude-data` volume, gated by a marker
-  (`~/.claude/.mcp-configured-v1`) on that volume — a **different** location from `.claude.json`
-  (`~/.local/share/claude-sp/`, deleted above). Deleting `.claude.json` alone leaves the marker in place,
-  so the entrypoint skips re-registration and `/mcp` shows nothing connected. Delete the marker too
-  (or run `--clean`, which wipes the whole `claude-data` volume) to force re-registration.
-- To drop and re-register ONE server, run `claude mcp remove <name>` inside the container, then also
-  delete the marker so the entrypoint re-adds it on the next start.
+**NOTES:**
+- Full reset needs also `rm -rf ~/.local/share/claude-sp/`, which deletes claude login but still
+  does **NOT** reset MCP registrations by itself (see below).
+- The MCP servers are registered only once per `claude-data` volume, gated by a marker (`~/.claude/.mcp-configured-v1`)
+  on that volume, which is a **different** location than `.claude.json` (`~/.local/share/claude-sp/`, deleted above).
+  Deleting `.claude.json` alone leaves the marker in place, so the entrypoint skips re-registration
+  and `/mcp` shows nothing connected. Delete the marker too (or run `--clean`) to force re-registration.
+- To drop and re-register ONE server, run `claude mcp remove <name>` inside the container and
+  delete the marker so that the entrypoint re-adds it on the next start.
 - Edits to the seeded `settings.json` reach an existing `claude-data` volume only via `--clean` or a manual copy.
-  Managed policy (`/etc/claude-code/`) isn't volume-seeded at all — it always needs a rebuild.
+  Managed policy (`/etc/claude-code/`) isn't volume-seeded at all, it always needs a complete rebuild.
+- Headroom's _Output Shaper_ + _CCR_ can produce `API Error: API returned an empty or malformed response (HTTP 200)`
+  once a session grows large enough to hit Claude Code's own auto-compaction. Most
+  straightforward solution is to either start a new session or disable functionality.
 
 
 ## Verify

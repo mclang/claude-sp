@@ -67,9 +67,14 @@ alias mount='mount | grep -Ev "^(overlay|tmpfs|proc|sysfs|devtmpfs|devpts|cgroup
 
 # Notify user if Headroom Proxy is available.
 # Enable "Output token reduction" with 10% holdout control group to get better 'headroom output-savings' estimations.
-# NOTE: Using 'headroom wrap' bypasses above 'claude' function !!!
+# NOTES:
+# - Using "Output Shaper" and/or(?) "Compress-Cache-Retrieve" (CCR) might start producing errors like
+#   "API Error: API returned an empty or malformed response (HTTP 200) — check for a proxy or gateway intercepting the request"
+#   when session context grows big enough and native Claude compression kicks in.
+# - Using 'headroom wrap' bypasses above 'claude' function restriction !!!
 if command -v headroom &>/dev/null; then
     alias hrc='headroom wrap -- claude'
+    # export HEADROOM_NO_CCR=1
     export HEADROOM_OUTPUT_SHAPER=1
     export HEADROOM_OUTPUT_HOLDOUT=0.1
     echo "NOTE: This container includes 'Headroom Proxy' (https://github.com/headroomlabs-ai/headroom)"

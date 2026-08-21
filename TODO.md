@@ -35,6 +35,8 @@
   - Context compression proxy/MCP: compresses tool outputs before they reach the model (~15-20% savings for coding agents)
   - AGAINST adding: sits as man-in-the-middle on the authenticated Claude API stream (proxy mode); compression
     bugs would corrupt context in hard-to-debug ways; overlaps what semble/mempalace already attack at source
+  - CONFIRMED (2026-08-21): Output Shaper + CCR produced "API Error: empty/malformed HTTP 200"
+    once sessions grew large enough to hit Claude Code's own auto-compaction (Root-caused via proxy.log)
   - STATUS: available OPT-IN, built via `run.sh --build --with-headroom`. Routing still manual (`headroom wrap -- claude`)
 
 - https://github.com/mukul975/Anthropic-Cybersecurity-Skills
