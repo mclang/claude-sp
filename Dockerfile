@@ -42,10 +42,18 @@ ENV PATH="$HOME/.local/bin:$PATH"
 ENV PYTHONUNBUFFERED=1
 USER claude
 
+
+### Claude Code and related setup
 # Using `https://claude.ai/install.sh` installs native binary in `$HOME/.local/bin`:
 RUN curl -fsSL https://claude.ai/install.sh | bash
 
-# Extra Bash configuration for the container user:
+# claude-statusline with default config
+# https://github.com/felipeelias/claude-statusline
+ARG STATUSLINE_PKG_URL="https://github.com/felipeelias/claude-statusline/releases/download"
+RUN curl -fsSL "${STATUSLINE_PKG_URL}/v0.9.0/claude-statusline_0.9.0_linux_$(dpkg --print-architecture).tar.gz" | tar -xz -C "$HOME/.local/bin" claude-statusline
+
+
+### Extra Bash configuration for the container user:
 RUN cat <<'EOF' >> "$HOME/.bashrc"
 
 # Restrict Claude to immediate subdirectories of `/workspace`.
@@ -84,6 +92,7 @@ if command -v headroom &>/dev/null; then
     echo ""
 fi
 EOF
+
 
 # Pre-create CONTAINER side volume mount points so Docker initializes named volumes using right owner.
 # NOTE: Keep these in line with what is used in `entrypoint.sh` and `run.sh` scripts!
