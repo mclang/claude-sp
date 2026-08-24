@@ -28,6 +28,7 @@ Created with the help of coffee, 8-bit gaming music, and Claude.
 | `assets/etc_claude-code_CLAUDE.md`            | Managed guidance (immutable): semble/mempalace/memory discipline                 |
 | `assets/etc_claude-code_managed-settings.json`| Managed deny list (immutable): blocks `git commit/push/fetch/pull`               |
 | `assets/home_dot-claude_settings.json`        | User-tier permissions (mutable): semble/mempalace tools run without prompts      |
+| `assets/install-claude-statusline.sh`         | Build-time helper that installs [claude-statusline](https://github.com/felipeelias/claude-statusline) |
 
 
 ## First-time setup

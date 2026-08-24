@@ -47,10 +47,10 @@ USER claude
 # Using `https://claude.ai/install.sh` installs native binary in `$HOME/.local/bin`:
 RUN curl -fsSL https://claude.ai/install.sh | bash
 
-# claude-statusline with default config
-# https://github.com/felipeelias/claude-statusline
-ARG STATUSLINE_PKG_URL="https://github.com/felipeelias/claude-statusline/releases/download"
-RUN curl -fsSL "${STATUSLINE_PKG_URL}/v0.9.0/claude-statusline_0.9.0_linux_$(dpkg --print-architecture).tar.gz" | tar -xz -C "$HOME/.local/bin" claude-statusline
+# Install claude-statusline (https://github.com/felipeelias/claude-statusline)
+# using script that handles also checksum checking and creating configuration file.
+COPY --chown=claude:claude --chmod=755 assets/install-claude-statusline.sh /tmp/install-claude-statusline.sh
+RUN /tmp/install-claude-statusline.sh && rm /tmp/install-claude-statusline.sh
 
 
 ### Extra Bash configuration for the container user:
