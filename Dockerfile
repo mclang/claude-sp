@@ -77,7 +77,7 @@ alias mount='mount | grep -Ev "^(overlay|tmpfs|proc|sysfs|devtmpfs|devpts|cgroup
 # Enable "Output token reduction" with 10% holdout control group to get better 'headroom output-savings' estimations.
 # NOTES:
 # - Using "Output Shaper" and/or(?) "Compress-Cache-Retrieve" (CCR) might start producing errors like
-#   "API Error: API returned an empty or malformed response (HTTP 200) — check for a proxy or gateway intercepting the request"
+#   "API Error: API returned an empty or malformed response (HTTP 200) - check for a proxy or gateway intercepting the request"
 #   when session context grows big enough and native Claude compression kicks in.
 # - Using 'headroom wrap' bypasses above 'claude' function restriction !!!
 if command -v headroom &>/dev/null; then
@@ -100,7 +100,7 @@ RUN mkdir -p "$HOME/.claude" "$HOME/.config" "$HOME/.mempalace" "$HOME/.cache/ch
 
 
 ### Extra one-time Semble setup
-# NOTE: Keep expensive RUNs above the COPY lines — editing a copied file invalidates the cache of every layer below it!
+# NOTE: Keep expensive RUNs above the COPY lines - editing a copied file invalidates the cache of every layer below it!
 
 # Bake semble's embedding model into the image to fix corrupted downloads during first run.
 # This works with mounted data volumes because fresh (empty) named volumes are seeded
@@ -133,6 +133,10 @@ COPY --chown=claude:claude assets/home_dot-claude_settings.json "$HOME/.claude/s
 # - A managed 'deny' cannot be overridden by any lower tier
 COPY --chown=root:root --chmod=444 assets/etc_claude-code_CLAUDE.md             /etc/claude-code/CLAUDE.md
 COPY --chown=root:root --chmod=444 assets/etc_claude-code_managed-settings.json /etc/claude-code/managed-settings.json
+
+# Hook scripts referenced by managed-settings.json (555: root-owned, read+execute, no write)
+COPY --chown=root:root --chmod=555 assets/hooks/semble-enforce.sh            /etc/claude-code/hooks/semble-enforce.sh
+COPY --chown=root:root --chmod=555 assets/hooks/mempalace-wing-normalize.sh  /etc/claude-code/hooks/mempalace-wing-normalize.sh
 
 
 ### Finishing touches

@@ -6,5 +6,27 @@
       "Bash(git fetch:*)",
       "Bash(git pull:*)"
     ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|WebFetch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/etc/claude-code/hooks/semble-enforce.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__mempalace__mempalace_checkpoint|mcp__mempalace__mempalace_update_drawer|mcp__mempalace__mempalace_diary_write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/etc/claude-code/hooks/mempalace-wing-normalize.sh"
+          }
+        ]
+      }
+    ]
   }
 }
