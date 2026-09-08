@@ -27,6 +27,26 @@
           }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "mempalace hook run --hook stop --harness claude-code"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "mempalace hook run --hook session-end --harness claude-code"
+          }
+        ]
+      }
     ]
   }
 }
