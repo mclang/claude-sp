@@ -20,7 +20,7 @@ fi
 declare -A DOCKER_VOLUMES=(
     ["${DOCKER_IMAGE}_claude-data"]="/home/claude/.claude"          # Claude Code state: settings, MCP config, session transcripts
     ["${DOCKER_IMAGE}_mempalace-data"]="/home/claude/.mempalace"    # MemPalace memory palace (persistent AI memory)
-    ["${DOCKER_IMAGE}_chroma-data"]="/home/claude/.cache/chroma"    # ChromaDB vector store used by MemPalace
+    ["${DOCKER_IMAGE}_chroma-data"]="/home/claude/.cache/chroma"    # ChromaDB's ONNX embedding-model cache (vector store itself lives in mempalace-data)
     ["${DOCKER_IMAGE}_semble-cache"]="/home/claude/.cache/semble"   # Semble code-search indexes (keyed by repo path)
     ["${DOCKER_IMAGE}_hf-cache"]="/home/claude/.cache/huggingface"  # HuggingFace model cache (semble embedding model ~60-80MB)
     ["${DOCKER_IMAGE}_headroom-data"]="/home/claude/.headroom"      # Headroom proxy savings ledger + logs (used ONLY when built with '--with-headroom'!)

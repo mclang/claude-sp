@@ -1,9 +1,9 @@
 # Claude Sandboxed Plus
 
 Dockerized Claude Code with following pre-wired MCP servers:
-- [Semble](https://github.com/MinishLab/semble) — semantic code search
-- [MemPalace](https://github.com/mempalace/mempalace) — persistent AI memory
-- [Headroom](https://github.com/headroomlabs-ai/headroom) — token-compression proxy (**optional**, see run flags)
+- [Semble](https://github.com/MinishLab/semble) - semantic code search
+- [MemPalace](https://github.com/mempalace/mempalace) - persistent AI memory
+- [Headroom](https://github.com/headroomlabs-ai/headroom) - token-compression proxy (**optional**, see run flags)
 
 One shared image, no per-project configuration: login once, then any project works
 with `./run.sh <project-dir>`.
@@ -26,9 +26,11 @@ Created with the help of coffee, 8-bit gaming music, and Claude.
 | `run.sh`                                      | Build/run/clean wrapper: Defines all volumes and mounts                          |
 | `assets/entrypoint.sh`                        | Container startup: Registers MCP servers, auto-initializes MemPalace per project |
 | `assets/etc_claude-code_CLAUDE.md`            | Managed guidance (immutable): semble/mempalace/memory discipline                 |
-| `assets/etc_claude-code_managed-settings.json`| Managed deny list (immutable): blocks `git commit/push/fetch/pull`               |
+| `assets/etc_claude-code_managed-settings.json`| Managed policy (immutable): deny list + MemPalace/Semble discipline hooks        |
 | `assets/home_dot-claude_settings.json`        | User-tier permissions (mutable): semble/mempalace tools run without prompts      |
 | `assets/install-claude-statusline.sh`         | Build-time helper that installs [claude-statusline](https://github.com/felipeelias/claude-statusline) |
+| `assets/hooks/semble-enforce.sh`              | PreToolUse hook (immutable): soft-warns before curl/WebFetch to external repos   |
+| `assets/hooks/mempalace-wing-normalize.sh`    | PreToolUse hook (immutable): auto-corrects non-normalized MemPalace wing names   |
 
 
 ## First-time setup
@@ -63,7 +65,10 @@ Options:
     - Refreshes **all** unpinned packages (claude, semble, mempalace, headroom) and the base image
     - Re-initializes Semble model, so extra slow
     - Use with `--build`, otherwise no-op!
-- `--with-headroom`/`-H`: include Headroom proxy in the build. Use with `--build`, otherwise no-op!
+- `--with-headroom`/`-H`: include Headroom proxy in the build
+    - The choice is remembered in a `.with-headroom` marker so that Docker-reclaimed image rebuilds the same way
+    - Auto-enables Output Shaper (10% holdout) via `.bashrc`
+    - Use with `--build`, otherwise no-op!
 - `--clean`/`-c`: deletes image and **all** named volumes
 
 Sessions persist per project until named volumes are deleted with `--clean`.
@@ -81,8 +86,8 @@ but starts empty. Delete the file or run `mempalace mine` inside the container t
 | Volume                    | Path in container     | Contents |
 |---------------------------|-----------------------|----------|
 | `claude-sp_claude-data`   | `~/.claude`           | Settings + permissions, session transcripts, `semble-search` sub-agent, MCP-configured marker |
-| `claude-sp_mempalace-data`| `~/.mempalace`        | MemPalace memory palace |
-| `claude-sp_chroma-data`   | `~/.cache/chroma`     | ChromaDB vector store |
+| `claude-sp_mempalace-data`| `~/.mempalace`        | MemPalace memory palace (persistent AI memory) |
+| `claude-sp_chroma-data`   | `~/.cache/chroma`     | ChromaDB's ONNX embedding-model cache (vector store itself lives in mempalace-data) |
 | `claude-sp_semble-cache`  | `~/.cache/semble`     | Semble code-search indexes |
 | `claude-sp_hf-cache`      | `~/.cache/huggingface`| HuggingFace model cache |
 | `claude-sp_headroom-data` | `~/.headroom`         | Headroom savings ledger + proxy logs (only populated when built with `--with-headroom`) |
@@ -131,9 +136,9 @@ Inside Container Bash shell:
 - Same for `headroom savings` if installed
 
 Inside Claude Code:
-- `/mcp` — `semble` and `mempalace` show as connected
-- Ask *"use semble to find where MCP servers are registered"* — expect `file:line` results, no downloads
-- Ask *"check mempalace status"* — expect drawer counts, no errors
+- `/mcp` - `semble` and `mempalace` show as connected
+- Ask *"use semble to find where MCP servers are registered"* - expect `file:line` results, no downloads
+- Ask *"check mempalace status"* - expect drawer counts, no errors
 
 ---
 

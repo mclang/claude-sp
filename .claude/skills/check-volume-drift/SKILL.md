@@ -14,7 +14,7 @@ commands like `docker exec` or `docker inspect`, instead go straight to reading 
 
 Bail out and warn user if this isn't "Claude Sandboxed Plus" (wrong `UID` or `HOME`) container.
 
-Don't rely on a fixed list of past-known files here — re-derive it fresh each run:
+Don't rely on a fixed list of past-known files here - re-derive it fresh each run:
 
 1. Read `Dockerfile` and `run.sh`'s `DOCKER_VOLUMES` paths fresh.
 2. List every `COPY` destination in the Dockerfile and flag any that fall under a `DOCKER_VOLUMES` path.
