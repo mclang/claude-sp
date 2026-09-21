@@ -30,7 +30,6 @@ Created with the help of coffee, 8-bit gaming music, and Claude.
 | `assets/home_dot-claude_settings.json`        | User-tier permissions (mutable): semble/mempalace tools run without prompts      |
 | `assets/install-claude-statusline.sh`         | Build-time helper that installs [claude-statusline](https://github.com/felipeelias/claude-statusline) |
 | `assets/hooks/semble-enforce.sh`              | PreToolUse hook (immutable): soft-warns before curl/WebFetch to external repos   |
-| `assets/hooks/mempalace-wing-normalize.sh`    | PreToolUse hook (immutable): auto-corrects non-normalized MemPalace wing names   |
 
 
 ## First-time setup
@@ -71,14 +70,17 @@ Options:
     - Use with `--build`, otherwise no-op!
 - `--clean`/`-c`: deletes image and **all** named volumes
 
-Sessions persist per project until named volumes are deleted with `--clean`.
-Use `claude --continue` inside the container to resume the latest session, or use session hash.
+Sessions persist _per project_ until named volumes are deleted with `--clean`.
+When inside container, use either normal `claude --continue` or `hrc --continue`
+if using Headroom to resume the latest session.
 
-Each project auto-initializes MemPalace on its first container start. This drops `mempalace.yaml` and
-`entities.json` into the project directory, both of which should be added to the project's `.gitignore`.
+Each project auto-initializes MemPalace on its first container start. This creates
+two files, `entities.json` and `mempalace.yaml`, into the project directory, both
+of which should be added either to global or the project's own `.gitignore`.
 
-**NOTE:** a leftover `mempalace.yaml` from an earlier palace skips the auto-mine! Memory still works
-but starts empty. Delete the file or run `mempalace mine` inside the container to re-mine project files.
+**NOTE:** a leftover `mempalace.yaml` from an earlier palace skips the auto-mine **if** MemPalace
+data volume also exists already! MemPalace still works though but memory starts empty. Delete the
+file or run `mempalace mine` by hand inside the container to re-mine all the project files.
 
 
 ## What persists (named volumes)

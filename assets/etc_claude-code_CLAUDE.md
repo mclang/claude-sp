@@ -10,7 +10,7 @@ put project-specific facts in a per-project `CLAUDE.md` instead.
   clearly allows all further edits to the file or files in current session. Question
   like "How do I fix X" is a request for a diagnosis/plan, not authorization to edit.
 
-## Code navigation - Semble is mandatory before external-repo lookups
+## Code navigation: Semble is mandatory before external-repo lookups
 - BEFORE any `curl`/`WebFetch`/`raw-source` lookup against a repo you don't have
   open locally, you MUST first call `semble search`/`find_related` on that repo
   (pass the repo root or GitHub URL as `repo`).
@@ -23,23 +23,19 @@ put project-specific facts in a per-project `CLAUDE.md` instead.
   don't bloat the main context. Don't pull large reference docs directly into
   context yourself when a sub-agent call would do.
 
-## Durable memory - MemPalace is the single source, mandatory checkpoints
+## Durable memory: MemPalace, hooks-only writes
 - Never write durable cross-session facts into the built-in file-memory system,
   instead use MemPalace only.
-- Your first substantive tool call in a session dealing with an existing project
-  must be preceded by one `mempalace_search`/`mempalace_kg_query` for that project.
-  This MemPalace tool call can be skipped only if BOTH of these hold:
-  - The task references nothing from a prior session
-  - The task will leave nothing worth recalling in future calls,
-    e.g. a one-off local read-only review with no follow-up expected.
-- Before ending a session (user says bye/exits), or when work reaches a natural
-  stopping point, call `mempalace_diary_write` unprompted.
+- Do not call or use MemPalace's mutating tools like `mempalace_checkpoint`,
+  `mempalace_diary_write`, `mempalace_kg_add`, `mempalace_add_drawer`,
+  `mempalace_update_drawer`, etc. during a session because the Stop/SessionEnd
+  hooks (wired in `managed-settings.json`) do all writes automatically and
+  a second writer racing them for the palace lock will break things up.
+- Using read-only calls (`mempalace_search`/`mempalace_kg_query`) is fine anytime,
+  including at the start of a session dealing with an existing project.
 - Don't store what the repo already records (code structure, past fixes, git history).
 - Never store secrets, confidential facts or Personally Identifiable Information
   because both MemPalace and Semble index are shared across ALL projects.
-- Type MemPalace wing names in the same normalized form that MemPalace's
-  auto-miner uses: lowercase, spaces/hyphens -> `_` (e.g. `Foo-BAR baz` -> `foo_bar_baz`)
-  to prevent project memory fragmentation.
 
 ## Headroom quirks
 - Any tool result (`Bash`/`Read`, `curl`, `WebFetch`, etc.) can pass through
@@ -55,19 +51,12 @@ put project-specific facts in a per-project `CLAUDE.md` instead.
   content again via another tool "just to be sure."
 
 ## Self-audit
-- Re-check compliance with the Semble/MemPalace rules above at every natural
-  stopping point in a session, not only when something happens to jog your
-  memory mid-task - treat it as part of finishing the turn.
-- If you find you skipped Semble or MemPalace when you should have used them,
-  say so immediately AND make the missed call right then, in the same turn.
-  A verbal note for "next time" without actually making the call does not
-  count as course-correcting.
-- Check periodically `mempalace_status` for two wings that are case/separator
-  variants of the current project (e.g. `Foo-BAR` and `foo_bar`). Any found
-  means that there is wing-name drift, which needs to be fixed by calling
-  `mempalace_update_drawer` for each drawer's `wing` to the normalized form.
-  Note that CLI's `mempalace migrate-wings` cannot be used mid-session because
-  MCP server holds the palace lock.
+- Re-check compliance with the above Semble rule and the hooks-only memory policy at
+  every natural stopping point in a session - treat it as part of finishing the turn.
+- If you find you skipped a needed Semble search, say so immediately and make
+  the missed call right then, in the same turn.
+- If you catch yourself about to call a MemPalace mutating tool, STOP -
+  saving is now the hooks' job, NOT yours.
 
 ## Token discipline
 - A tool call earns its place only when it prevents more work than it costs.

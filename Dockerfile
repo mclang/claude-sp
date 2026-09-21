@@ -136,7 +136,6 @@ COPY --chown=root:root --chmod=444 assets/etc_claude-code_managed-settings.json 
 
 # Hook scripts referenced by managed-settings.json (555: root-owned, read+execute, no write)
 COPY --chown=root:root --chmod=555 assets/hooks/semble-enforce.sh            /etc/claude-code/hooks/semble-enforce.sh
-COPY --chown=root:root --chmod=555 assets/hooks/mempalace-wing-normalize.sh  /etc/claude-code/hooks/mempalace-wing-normalize.sh
 
 
 ### Finishing touches

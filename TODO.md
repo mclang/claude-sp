@@ -11,11 +11,16 @@
     force-refresh would clobber user settings)
   - Update flow becomes: edit asset -> bump marker -> `--build` -> restart
 
-- MemPalace's Stop/SessionEnd hooks still fail ~90% of the time racing the live MCP connection
-  for the palace lock (`~/.mempalace/hook_state/hook.log`).
-- Tried `mempalace daemon start` in `entrypoint.sh` but reverted because the backend is
-  single-writer, so a permanent daemon just blocks live MCP writes instead. Thus manual
-  `mempalace_checkpoint`/`diary_write` calls remain the reliable path.
+- Wing naming drift: hooks always prefix wings with `wing_`, but `mempalace init`/`mine`
+  don't. FIXED (2026-09-17): `entrypoint.sh` splits init/mine and patches `mempalace.yaml`'s
+  `wing:` in between so both agree. Root cause still open upstream:
+  - https://github.com/MemPalace/mempalace/issues/1861
+  - https://github.com/MemPalace/mempalace/pull/1511 (`MEMPALACE_WING` env override, unmerged)
+
+- Optimization to evaluate later: new `mempalace-light-mcp` (3-tool, PQL-based) cuts MCP
+  schema tokens ~4x vs our current 45-tool server; would need `CLAUDE.md` rewritten around
+  PQL instead of named tools, so treat as a separate design decision, not a drop-in.
+
 
 ## Hardening (from in-container validation review, 2026-07-15)
 

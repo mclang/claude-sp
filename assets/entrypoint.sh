@@ -27,10 +27,17 @@ configure_mcp() {
 # - `mempalace.yaml`: Lives in project dir, survives `--clean`
 # - `chroma.sqlite3`: Lives in MemPalace data volume and gets thus deleted when `--clean` is run
 #
-# NOTE:
-# - A project with a stale `mempalace.yaml` + an already-populated palace skips mining!
-# - Memory still works but starts empty and fills only through Claude's own writes.
-[[ -f "$PWD/mempalace.yaml" && -f "${MEMPALACE_PALACE_DIR}/chroma.sqlite3" ]] || mempalace init --yes --auto-mine --no-llm "$PWD"
+# NOTES:
+# - A project with a stale `mempalace.yaml` file but an already-populated palace
+#   (initialized for other project) skips mining for the project!
+#   ==> Memory still works but starts empty and fills only through Claude's hook writes.
+# - Init+Mine split so that the wing prefix can be set in between, which fixes wing naming drift
+#   between differen kind of writes: https://github.com/MemPalace/mempalace/issues/1861
+if [[ ! -f "$PWD/mempalace.yaml" || ! -f "${MEMPALACE_PALACE_DIR}/chroma.sqlite3" ]]; then
+    mempalace init --yes --no-llm "$PWD" </dev/null
+    sed -i -E 's/^wing: (wing_)?/wing: wing_/' "$PWD/mempalace.yaml"
+    mempalace mine "$PWD"
+fi
 
 exec "$@"
 

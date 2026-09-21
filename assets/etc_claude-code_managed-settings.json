@@ -17,15 +17,6 @@
             "command": "/etc/claude-code/hooks/semble-enforce.sh"
           }
         ]
-      },
-      {
-        "matcher": "mcp__mempalace__mempalace_checkpoint|mcp__mempalace__mempalace_update_drawer|mcp__mempalace__mempalace_diary_write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/etc/claude-code/hooks/mempalace-wing-normalize.sh"
-          }
-        ]
       }
     ],
     "Stop": [
@@ -44,6 +35,16 @@
           {
             "type": "command",
             "command": "mempalace hook run --hook session-end --harness claude-code"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "mempalace hook run --hook precompact --harness claude-code"
           }
         ]
       }
