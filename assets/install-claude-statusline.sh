@@ -7,11 +7,11 @@ set -euo pipefail
 # https://github.com/felipeelias/claude-statusline/releases
 ARCH="$(dpkg --print-architecture)"
 case "$ARCH" in
-    amd64) SHA256="d8310cb9dbd60f87daa9407a9017fab973d8651dffb4eb7b9c2a695a69b118dd" ;;
-    arm64) SHA256="7df87185e42340a6f7f4cf776718890bb5d8ec5ccaaccb62121e734507570175" ;;
+    amd64) SHA256="162bca5336cc0e92faf4fec7722166348554930345b28a2eed858c9dfe54865e" ;;
+    arm64) SHA256="f27bf4352e9a4487856792e29dca6f1815ca80d34df666a85293186925a93888" ;;
     *) echo "ERROR: unsupported architecture '$ARCH'!" >&2; exit 1 ;;
 esac
-VERSION="0.9.0"
+VERSION="0.10.1"
 PACKAGE_NAME="claude-statusline_${VERSION}_linux_${ARCH}.tar.gz"
 DOWNLOAD_URL="https://github.com/felipeelias/claude-statusline/releases/download/v${VERSION}/${PACKAGE_NAME}"
 DOWNLOAD_TMP=$(mktemp)
@@ -36,6 +36,9 @@ rm -f "$DOWNLOAD_TMP"
 mkdir -p "$HOME/.config/claude-statusline"
 cat >    "$HOME/.config/claude-statusline/config.toml" <<'TOML'
 format = '$directory | $git_branch | $model | $cost | context: $context | block: $usage'
+
+[context]
+bar_markers = []
 
 [usage]
 disabled = false
