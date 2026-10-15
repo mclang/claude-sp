@@ -40,6 +40,8 @@ RUN mkdir -p "/etc/claude-code"
 ENV HOME="/home/claude"
 ENV PATH="$HOME/.local/bin:$PATH"
 ENV PYTHONUNBUFFERED=1
+# Pin to the volume: an empty `~/.mempalace` makes MemPalace fall back to `~/.config/mempalace`
+ENV MEMPALACE_CONFIG_DIR="$HOME/.mempalace"
 USER claude
 
 
