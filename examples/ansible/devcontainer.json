@@ -1,0 +1,23 @@
+//
+// Example `devcontainer.json` file for Ansible
+//
+// Setup:
+// 1. Create `<project>/.devcontainer/`
+// 2. Copy files in this directory to the above directory (NOTE: `example.env` -> `.env` & set values)
+// 3. Copy `src/claude-sp/` to `<project>/.devcontainer/claude-sp/` and add it to project `.gitignore`
+// 4. Build devcontainer: `devcontainer up --workspace-folder .`
+// 5. Run the container:  `devcontainer exec --workspace-folder . bash`
+//
+{
+    "name": "${localWorkspaceFolderBasename}",
+    "dockerComposeFile": "compose.yaml",
+    "service": "devenv",
+    "features": {
+        "./claude-sp": { "headroom": false }
+    },
+    "remoteUser": "claude",
+    "workspaceFolder": "/workspace/${localWorkspaceFolderBasename}",
+
+    // Host-side Claude state shared with `run.sh`. Files MUST exist before start, otherwise Docker creates directories.
+    "initializeCommand": "mkdir -p ~/.local/share/claude-sp && for F in .claude.json .credentials.json; do [ -f ~/.local/share/claude-sp/$F ] || echo '{}' > ~/.local/share/claude-sp/$F; chmod 600 ~/.local/share/claude-sp/$F; done"
+}
