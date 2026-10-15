@@ -20,16 +20,16 @@ Created with the help of coffee, 8-bit gaming music, and Claude.
 
 ## Repo layout
 
-| File                                          | Purpose                                                                          |
-|-----------------------------------------------|----------------------------------------------------------------------------------|
-| `Dockerfile`                                  | Image: Python slim, Claude Code, semble + mempalace                              |
-| `run.sh`                                      | Build/run/clean wrapper: Defines all volumes and mounts                          |
-| `assets/entrypoint.sh`                        | Container startup: Registers MCP servers, auto-initializes MemPalace per project |
-| `assets/etc_claude-code_CLAUDE.md`            | Managed guidance (immutable): semble/mempalace/memory discipline                 |
-| `assets/etc_claude-code_managed-settings.json`| Managed policy (immutable): deny list + MemPalace/Semble discipline hooks        |
-| `assets/home_dot-claude_settings.json`        | User-tier permissions (mutable): semble/mempalace tools run without prompts      |
-| `assets/install-claude-statusline.sh`         | Build-time helper that installs [claude-statusline](https://github.com/felipeelias/claude-statusline) |
-| `assets/hooks/semble-enforce.sh`              | PreToolUse hook (immutable): soft-warns before curl/WebFetch to external repos   |
+| File                                                         | Purpose                                                                          |
+|--------------------------------------------------------------|----------------------------------------------------------------------------------|
+| `Dockerfile`                                                 | Image: Python slim, Claude Code, semble + mempalace                              |
+| `run.sh`                                                     | Build/run/clean wrapper: Defines all volumes and mounts                          |
+| `src/claude-sp/assets/entrypoint.sh`                         | Container startup: Registers MCP servers, auto-initializes MemPalace per project |
+| `src/claude-sp/assets/etc_claude-code_CLAUDE.md`             | Managed guidance (immutable): semble/mempalace/memory discipline                 |
+| `src/claude-sp/assets/etc_claude-code_managed-settings.json` | Managed policy (immutable): deny list + MemPalace/Semble discipline hooks        |
+| `src/claude-sp/assets/home_dot-claude_settings.json`         | User-tier permissions (mutable): semble/mempalace tools run without prompts      |
+| `src/claude-sp/assets/install-claude-statusline.sh`          | Build-time helper that installs [claude-statusline](https://github.com/felipeelias/claude-statusline) |
+| `src/claude-sp/assets/hooks/semble-enforce.sh`               | PreToolUse hook (immutable): soft-warns before curl/WebFetch to external repos   |
 
 
 ## First-time setup
