@@ -18,7 +18,7 @@ DOWNLOAD_TMP=$(mktemp)
 
 
 echo "### Installing 'claude-statusline' v${VERSION} (${ARCH}) ###"
-curl -fsSL -o "$DOWNLOAD_TMP" "$DOWNLOAD_URL"
+curl -fsSL --retry 5 --retry-all-errors -o "$DOWNLOAD_TMP" "$DOWNLOAD_URL"
 
 ACTUAL_SHA256=$(sha256sum "$DOWNLOAD_TMP" | cut -d ' ' -f1)
 if [[ "$ACTUAL_SHA256" != "$SHA256" ]]; then

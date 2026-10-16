@@ -15,7 +15,8 @@ VENV="/opt/claude-sp"
 export DEBIAN_FRONTEND=noninteractive
 
 run_as_user() {
-    su "$USERNAME" -s /bin/bash -c "export PATH=\"\$HOME/.local/bin:$VENV/bin:\$PATH\"; $1"
+    # Set shells to use 'pipefail' so that pipelines fail if ANY part of it fails (e.g `curl` "HTTP 429" before `bash`)
+    su "$USERNAME" -s /bin/bash -c "set -o pipefail; export PATH=\"\$HOME/.local/bin:$VENV/bin:\$PATH\"; $1"
 }
 
 echo "### Installing 'claude-sp' feature ###"
@@ -48,7 +49,7 @@ install -D -o root -g root -m 755 "$ASSETS/entrypoint.sh"                       
 # Pre-create volume mount points so that named volumes get right owner.
 run_as_user 'mkdir -p ~/.claude ~/.config ~/.local/bin ~/.mempalace ~/.cache/chroma ~/.cache/semble ~/.cache/huggingface'
 
-run_as_user 'curl -fsSL https://claude.ai/install.sh | bash'
+run_as_user 'curl -fsSL --retry 5 --retry-all-errors https://claude.ai/install.sh | bash'
 install -o "$USERNAME" -g "$USERNAME" -m 755 "$ASSETS/install-claude-statusline.sh" /tmp/install-claude-statusline.sh
 run_as_user '/tmp/install-claude-statusline.sh'
 rm /tmp/install-claude-statusline.sh
