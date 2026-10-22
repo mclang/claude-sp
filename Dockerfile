@@ -44,10 +44,13 @@ ENV PYTHONUNBUFFERED=1
 ENV MEMPALACE_CONFIG_DIR="$HOME/.mempalace"
 USER claude
 
+# Set shells to use 'pipefail' so that pipelines fail if ANY part of it fails (e.g `curl` "HTTP 429" before `bash`)
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
 
 ### Claude Code and related setup
 # Using `https://claude.ai/install.sh` installs native binary in `$HOME/.local/bin`:
-RUN curl -fsSL https://claude.ai/install.sh | bash
+RUN curl -fsSL --retry 5 --retry-all-errors https://claude.ai/install.sh | bash
 
 # Install claude-statusline (https://github.com/felipeelias/claude-statusline)
 # using script that handles also checksum checking and creating configuration file.
