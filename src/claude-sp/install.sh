@@ -16,7 +16,8 @@ HEADROOM="${HEADROOM:-false}"
 export DEBIAN_FRONTEND=noninteractive
 
 run_as_user() {
-    su "$USERNAME" -s /bin/bash -c "export PATH=\"\$HOME/.local/bin:$VENV/bin:\$PATH\"; $1"
+    # Set shells to use 'pipefail' so that pipelines fail if ANY part of it fails (e.g `curl` "HTTP 429" before `bash`)
+    su "$USERNAME" -s /bin/bash -c "set -o pipefail; export PATH=\"\$HOME/.local/bin:$VENV/bin:\$PATH\"; $1"
 }
 
 echo "### Installing 'claude-sp' feature ###"
@@ -55,7 +56,7 @@ if [[ "$HEADROOM" == "true" ]]; then
     ln -sf "$VENV/bin/headroom" "$USER_HOME/.local/bin/headroom"
 fi
 
-run_as_user 'curl -fsSL https://claude.ai/install.sh | bash'
+run_as_user 'curl -fsSL --retry 5 --retry-all-errors https://claude.ai/install.sh | bash'
 install -o "$USERNAME" -g "$USERNAME" -m 755 "$ASSETS/install-claude-statusline.sh" /tmp/install-claude-statusline.sh
 run_as_user '/tmp/install-claude-statusline.sh'
 rm /tmp/install-claude-statusline.sh
