@@ -68,6 +68,10 @@ install -o "$USERNAME" -g "$USERNAME" -m 644 "$ASSETS/home_dot-claude_settings.j
 run_as_user 'python -c "from semble.utils import resolve_model_name; from model2vec import StaticModel; StaticModel.from_pretrained(resolve_model_name())"'
 run_as_user 'semble install --agent claude --type subagent --yes'
 
+# Add MemPalace's embedding model so it isn't downloaded again after every rebuild.
+run_as_user 'python -c "from mempalace.embedding import get_embedding_function; get_embedding_function()([\"warmup\"])"'
+
+
 cat <<'EOF' >> "$USER_HOME/.bashrc"
 
 # Restrict Claude to immediate subdirectories of `/workspace`.
@@ -91,3 +95,4 @@ fi
 EOF
 
 echo "==> DONE"
+
