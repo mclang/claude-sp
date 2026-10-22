@@ -4,6 +4,7 @@
     "name": "Claude Sandboxed Plus",
     "description": "Sandboxed Claude Code + Semble + MemPalace. Requires `\"remoteUser\": \"claude\"`.",
     "containerEnv": {
+        "CLAUDE_CONFIG_DIR": "/home/claude/.claude",
         "MEMPALACE_CONFIG_DIR": "/home/claude/.mempalace",
         "PATH": "/home/claude/.local/bin:${PATH}",
         "PYTHONUNBUFFERED": "1"

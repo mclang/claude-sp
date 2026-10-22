@@ -20,8 +20,6 @@ services:
       - ..:/workspace/${PROJECT_NAME}
       - claude:/home/claude/.claude
       - mempalace:/home/claude/.mempalace
-      - ${HOME}/.local/share/claude-sp/.claude.json:/home/claude/.claude.json
-      - ${HOME}/.local/share/claude-sp/.credentials.json:/home/claude/.claude/.credentials.json
       - ${HOME}/.config/git:/home/claude/.config/git:ro
 
   test-target:
