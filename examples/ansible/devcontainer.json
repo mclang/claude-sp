@@ -16,8 +16,5 @@
         "./claude-sp": { "headroom": false }
     },
     "remoteUser": "claude",
-    "workspaceFolder": "/workspace/${localWorkspaceFolderBasename}",
-
-    // Host-side Claude state shared with `run.sh`. Files MUST exist before start, otherwise Docker creates directories.
-    "initializeCommand": "mkdir -p ~/.local/share/claude-sp && for F in .claude.json .credentials.json; do [ -f ~/.local/share/claude-sp/$F ] || echo '{}' > ~/.local/share/claude-sp/$F; chmod 600 ~/.local/share/claude-sp/$F; done"
+    "workspaceFolder": "/workspace/${localWorkspaceFolderBasename}"
 }

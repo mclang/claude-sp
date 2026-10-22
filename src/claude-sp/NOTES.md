@@ -17,6 +17,5 @@ That is sure way to escape the sandbox and basically could give `root` access to
 - Two volumes for Claude state and memory, e.g:
   - `<project>-claude`    -> `/home/claude/.claude`
   - `<project>-mempalace` -> `/home/claude/.mempalace`
-- Host login files bind-mounted to `~/.claude.json` and `~/.claude/.credentials.json`
-  (see `.devcontainer/devcontainer.json` in this repo)
+- Log in once per project with `/login`: login and config are stored in the claude volume
 
