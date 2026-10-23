@@ -1,0 +1,23 @@
+name: Publish CSP as a Feature
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, csp-as-a-feature]   # TEMP: drop the branch before merge
+    paths: ["src/**", ".github/workflows/publish.yaml"]   # Unchanged version is skipped, not an error
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write       # Git tag per published version
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: devcontainers/action@v1
+        with:
+          publish-features: "true"
+          base-path-to-features: "./src"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
