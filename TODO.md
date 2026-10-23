@@ -26,12 +26,25 @@
 
 - Pin supply chain: base image digest, `pip install semble==X mempalace==Y` (unpinned already caused the `-v2` model drift)
 - CVE-scan the built image with [Grype](https://github.com/anchore/grype) (out-of-image step, most useful once deps are pinned)
-- Resource limits in `docker run`: `--memory`, `--pids-limit`, `--cpus`
+- Resource limits: `--memory`, `--pids-limit`, `--cpus` (`run.sh` and project configs)
 - Reconsider secret ingest on BOTH paths into the *shared* store - semble `--content all` AND
   `mempalace init --auto-mine` pull raw file contents in, so `.env`/config secrets become recallable
-  cross-project. Add `.sembleignore` exclusions and a mempalace mine-exclude (or drop `--auto-mine`)
+  (cross-project with `run.sh`). Add `.sembleignore` exclusions and a mempalace mine-exclude (or drop `--auto-mine`)
 - Egress allowlist proxy if threat model grows (full outbound + broad file read = exfil path; Claude API needs some egress)
 - `run.sh`: warn if `~/.config/git` missing before bind-mounting (Docker creates it as empty dir otherwise)
+
+
+## Dev container Feature
+
+Decided against:
+- `CLAUDE_CODE_OAUTH_TOKEN`: model requests only, no claude.ai connectors / Remote Control
+- `managed-mcp.json`: exclusive control blocks user servers and connectors
+
+Next:
+- Remove Headroom (own commit); evaluate RTK as replacement
+- Rewrite `run.sh` as CSP-only devcontainer wrapper (up+exec, --stop, --rebuild, --clean); remove `Dockerfile`,
+  `check-volume-drift` skill; rewrite `validate-docs`
+- Drop Chroma's duplicate `onnx.tar.gz` (~83 MB) after the bake, if Chroma doesn't re-download it (verify)
 
 
 ## New Functionality
