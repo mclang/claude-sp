@@ -1,6 +1,6 @@
 {
     "id": "claude-sp",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "name": "Claude Sandboxed Plus",
     "description": "Sandboxed Claude Code + Semble + MemPalace (+ optional Headroom). Requires `\"remoteUser\": \"claude\"`.",
     "options": {
