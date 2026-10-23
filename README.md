@@ -29,6 +29,7 @@ Created with the help of coffee, 8-bit gaming music, and Claude.
 | `Dockerfile`                                                 | Image: Python slim, Claude Code, semble + mempalace                              |
 | `run.sh`                                                     | Build/run/clean wrapper: Defines all volumes and mounts                          |
 | `.devcontainer/`                                             | CSP's own dev container: develops the Feature straight from `src/claude-sp/`     |
+| `.github/workflows/publish.yaml`                             | Publishes `src/claude-sp/` to ghcr on merge to `main` (new versions only)        |
 | `src/claude-sp/`                                             | Dev container Feature: `devcontainer-feature.json` + `install.sh`                |
 | `src/claude-sp/assets/entrypoint.sh`                         | Container startup: Registers MCP servers, auto-initializes MemPalace per project |
 | `src/claude-sp/assets/etc_claude-code_CLAUDE.md`             | Managed guidance (immutable): semble/mempalace/memory discipline                 |
@@ -63,6 +64,9 @@ Other projects use the published Feature (example: `examples/ansible/`):
 ```jsonc
 "features": { "ghcr.io/mclang/claude-sp/claude-sp:0": {} }
 ```
+
+Releasing: bump `version` in `src/claude-sp/devcontainer-feature.json` in the PR. Merging to `main`
+publishes it; an unchanged version is skipped.
 
 
 ## run.sh (shared state)
