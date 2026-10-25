@@ -4,16 +4,15 @@
 // Setup:
 // 1. Create `<project>/.devcontainer/`
 // 2. Copy files in this directory to the above directory (NOTE: `example.env` -> `.env` & set values)
-// 3. Copy `src/claude-sp/` to `<project>/.devcontainer/claude-sp/` and add it to project `.gitignore`
-// 4. Build devcontainer: `devcontainer up --workspace-folder .`
-// 5. Run the container:  `devcontainer exec --workspace-folder . bash`
+// 3. Build devcontainer: `devcontainer up --workspace-folder .`
+// 4. Run the container:  `devcontainer exec --workspace-folder . bash`
 //
 {
     "name": "${localWorkspaceFolderBasename}",
     "dockerComposeFile": "compose.yaml",
     "service": "devenv",
     "features": {
-        "./claude-sp": { "headroom": false }
+        "ghcr.io/mclang/claude-sp/claude-sp:0": {}
     },
     "remoteUser": "claude",
     "workspaceFolder": "/workspace/${localWorkspaceFolderBasename}"
