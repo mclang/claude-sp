@@ -1,3 +1,6 @@
+# Local copy of `src/claude-sp/` for running devcontainer in this project (rsynced by `initializeCommand`)
+.devcontainer/claude-sp/
+
 # MemPalace per-project files (issue #185)
 entities.json
 mempalace.yaml

@@ -1,0 +1,26 @@
+//
+// Devcontainer config for "Claude Sandboxed Plus"
+//
+// Uses `initializeCommand` to rsync the in-repo feature directly into place instead of downloading
+// it from ghcr.io like devcontainers are normally used. This makes CSP development much easier.
+//
+// Start: `devcontainer up --workspace-folder .`
+// Use:   `devcontainer exec --workspace-folder . bash`
+//
+{
+    "name": "${localWorkspaceFolderBasename}",
+    "image": "python:3.13-slim",
+    "features": {
+        "./claude-sp": {}
+    },
+    "remoteUser": "claude",
+    "runArgs": ["--cap-drop=ALL", "--hostname=csp-devenv", "--name=${localWorkspaceFolderBasename}"],
+    "workspaceMount": "source=${localWorkspaceFolder},target=/workspace/${localWorkspaceFolderBasename},type=bind",
+    "workspaceFolder": "/workspace/${localWorkspaceFolderBasename}",
+    "mounts": [
+        "source=csp-claude,target=/home/claude/.claude,type=volume",
+        "source=csp-mempalace,target=/home/claude/.mempalace,type=volume",
+        "source=${localEnv:HOME}/.config/git,target=/home/claude/.config/git,type=bind,readonly"
+    ],
+    "initializeCommand": "rsync -a --delete src/claude-sp/ .devcontainer/claude-sp/"
+}

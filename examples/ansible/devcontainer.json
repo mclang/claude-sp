@@ -1,0 +1,19 @@
+//
+// Example `devcontainer.json` file for Ansible
+//
+// Setup:
+// 1. Create `<project>/.devcontainer/`
+// 2. Copy files in this directory to the above directory (NOTE: `example.env` -> `.env` & set values)
+// 3. Build devcontainer: `devcontainer up --workspace-folder .`
+// 4. Run the container:  `devcontainer exec --workspace-folder . bash`
+//
+{
+    "name": "${localWorkspaceFolderBasename}",
+    "dockerComposeFile": "compose.yaml",
+    "service": "devenv",
+    "features": {
+        "ghcr.io/mclang/claude-sp/claude-sp:0": {}
+    },
+    "remoteUser": "claude",
+    "workspaceFolder": "/workspace/${localWorkspaceFolderBasename}"
+}

@@ -40,16 +40,21 @@ RUN mkdir -p "/etc/claude-code"
 ENV HOME="/home/claude"
 ENV PATH="$HOME/.local/bin:$PATH"
 ENV PYTHONUNBUFFERED=1
+# Pin to the volume: an empty `~/.mempalace` makes MemPalace fall back to `~/.config/mempalace`
+ENV MEMPALACE_CONFIG_DIR="$HOME/.mempalace"
 USER claude
+
+# Set shells to use 'pipefail' so that pipelines fail if ANY part of it fails (e.g `curl` "HTTP 429" before `bash`)
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 
 ### Claude Code and related setup
 # Using `https://claude.ai/install.sh` installs native binary in `$HOME/.local/bin`:
-RUN curl -fsSL https://claude.ai/install.sh | bash
+RUN curl -fsSL --retry 5 --retry-all-errors https://claude.ai/install.sh | bash
 
 # Install claude-statusline (https://github.com/felipeelias/claude-statusline)
 # using script that handles also checksum checking and creating configuration file.
-COPY --chown=claude:claude --chmod=755 assets/install-claude-statusline.sh /tmp/install-claude-statusline.sh
+COPY --chown=claude:claude --chmod=755 src/claude-sp/assets/install-claude-statusline.sh /tmp/install-claude-statusline.sh
 RUN /tmp/install-claude-statusline.sh && rm /tmp/install-claude-statusline.sh
 
 
@@ -124,23 +129,23 @@ RUN if [ "$INSTALL_HEADROOM" = "1" ]; then pip install --user --no-cache-dir "he
 
 # User-level permissions initialized so that semble/mempalace/... MCP tools and CLI commands run without annoying prompts.
 # NOTE: Mutable by the 'claude' user by design so that Claude Code can write runtime prefs here, e.g. `/model`.
-COPY --chown=claude:claude assets/home_dot-claude_settings.json "$HOME/.claude/settings.json"
+COPY --chown=claude:claude src/claude-sp/assets/home_dot-claude_settings.json "$HOME/.claude/settings.json"
 
 # Managed policy files
 # NOTES:
 # - root-owned and 444, thus outside of 'claude' users write capability
 # - Allow/Deny precedence: Managed > CLI args > Local > Project > User
 # - A managed 'deny' cannot be overridden by any lower tier
-COPY --chown=root:root --chmod=444 assets/etc_claude-code_CLAUDE.md             /etc/claude-code/CLAUDE.md
-COPY --chown=root:root --chmod=444 assets/etc_claude-code_managed-settings.json /etc/claude-code/managed-settings.json
+COPY --chown=root:root --chmod=444 src/claude-sp/assets/etc_claude-code_CLAUDE.md             /etc/claude-code/CLAUDE.md
+COPY --chown=root:root --chmod=444 src/claude-sp/assets/etc_claude-code_managed-settings.json /etc/claude-code/managed-settings.json
 
 # Hook scripts referenced by managed-settings.json (555: root-owned, read+execute, no write)
-COPY --chown=root:root --chmod=555 assets/hooks/semble-enforce.sh            /etc/claude-code/hooks/semble-enforce.sh
+COPY --chown=root:root --chmod=555 src/claude-sp/assets/hooks/semble-enforce.sh            /etc/claude-code/hooks/semble-enforce.sh
 
 
 ### Finishing touches
 
-COPY --chown=claude:claude --chmod=755 assets/entrypoint.sh "$HOME/entrypoint.sh"
+COPY --chown=claude:claude --chmod=755 src/claude-sp/assets/entrypoint.sh "$HOME/entrypoint.sh"
 
 WORKDIR /workspace
 

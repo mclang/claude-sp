@@ -1,0 +1,14 @@
+{
+    "id": "claude-sp",
+    "version": "0.2.0",
+    "name": "Claude Sandboxed Plus",
+    "description": "Sandboxed Claude Code + Semble + MemPalace. Requires `\"remoteUser\": \"claude\"`.",
+    "containerEnv": {
+        "CLAUDE_CONFIG_DIR": "/home/claude/.claude",
+        "MEMPALACE_CONFIG_DIR": "/home/claude/.mempalace",
+        "PATH": "/home/claude/.local/bin:${PATH}",
+        "PYTHONUNBUFFERED": "1"
+    },
+    "securityOpt": ["no-new-privileges:true"],
+    "postStartCommand": "/usr/local/share/claude-sp/entrypoint.sh"
+}

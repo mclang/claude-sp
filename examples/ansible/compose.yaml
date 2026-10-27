@@ -1,0 +1,33 @@
+#
+# Docker Compose file for creating devcontainer stack for Ansible where:
+# - devenv:      Claude sandbox (no root)
+# - test-target: disposable Ubuntu "server" for testing playbooks (root, sudo, sshd)
+#
+# Inventory entry for "test-target" should be:
+#   test-target ansible_user=ansible ansible_ssh_common_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+#
+services:
+  devenv:
+    build: { context: ., dockerfile: devenv.Dockerfile }
+    container_name: ${PROJECT_NAME:?set in .devcontainer/.env}-devenv
+    hostname: devenv
+    command: sleep infinity
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    depends_on: [test-target]
+    volumes:
+      # Project root is one level up from `.devcontainer` where this file should be:
+      - ..:/workspace/${PROJECT_NAME}
+      - claude:/home/claude/.claude
+      - mempalace:/home/claude/.mempalace
+      - ${HOME}/.config/git:/home/claude/.config/git:ro
+
+  test-target:
+    build: { context: ., dockerfile: test-target.Dockerfile }
+    container_name: ${PROJECT_NAME}-test-target
+    hostname: test-target
+
+volumes:
+  claude:
+  mempalace:
+
