@@ -15,7 +15,7 @@ Image mode, plain `devcontainer.json`:
 
 ```jsonc
 {
-    "image": "python:3.13-slim",                    // Feature uses `apt-get` -> Debian/Ubuntu needed
+    "image": "python:3.14-slim",                    // Feature needs `apt-get` and Python 3.11 - 3.14
     "features": {
         "ghcr.io/mclang/claude-sp/claude-sp:0": {}
     },

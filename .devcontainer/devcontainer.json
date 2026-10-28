@@ -9,7 +9,7 @@
 //
 {
     "name": "${localWorkspaceFolderBasename}",
-    "image": "python:3.13-slim",
+    "image": "python:3.14-slim",
     "features": {
         "./claude-sp": {}
     },

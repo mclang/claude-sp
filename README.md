@@ -58,7 +58,9 @@ devcontainer exec --workspace-folder . bash
 ```
 
 Updating claude/semble/mempalace needs an uncached rebuild:
-`docker pull python:3.13-slim` + `devcontainer up --workspace-folder . --remove-existing-container --build-no-cache`
+```bash
+$ docker pull python:3.14-slim && devcontainer up --workspace-folder . --remove-existing-container --build-no-cache
+```
 
 Other projects use the published Feature (example: `examples/ansible/`):
 ```jsonc
