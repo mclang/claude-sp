@@ -11,9 +11,9 @@
     force-refresh would clobber user settings)
   - Update flow becomes: edit asset -> bump marker -> `--build` -> restart
 
-- Wing naming drift: hooks always prefix wings with `wing_`, but `mempalace init`/`mine`
-  don't. FIXED (2026-09-17): `entrypoint.sh` splits init/mine and patches `mempalace.yaml`'s
-  `wing:` in between so both agree. Root cause still open upstream:
+- Wing naming: Since 3.11 MemPalace hooks write transcripts into `<project>` (was `wing_<project>`),
+  same as `mempalace init`/`mine`. Only the diary still goes into `wing_<project>`, so the fix
+  added to `entrypoint.sh` (commit: `c5745f0`) is not needed anymore:
   - https://github.com/MemPalace/mempalace/issues/1861
   - https://github.com/MemPalace/mempalace/pull/1511 (`MEMPALACE_WING` env override, unmerged)
 
