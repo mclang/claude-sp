@@ -1,48 +1,53 @@
 ---
 name: validate-docs
-description: Cross-check Dockerfile, run.sh, and src/claude-sp/assets/* against README.md and TODO.md for drift. Use before committing, or after adding/renaming a flag, volume, or asset.
+description: Cross-check the Feature (src/claude-sp/), devcontainer-*.sh scripts and examples against README.md and NOTES.md for drift. Use before committing, or after adding/renaming an option, volume, asset or example.
 ---
 
-Read `Dockerfile`, `run.sh`, `README.md`, `TODO.md`, and all COMMITTED files in `src/claude-sp/assets/`
-directory (`git ls-files src/claude-sp/assets/`). Skip reading files already read fresh during this session.
+Read `README.md`, `devcontainer-*.sh` and all COMMITTED files in `src/claude-sp/`, `examples/`, `.devcontainer/`
+and `.github/workflows/` directories. Skip reading files already read fresh during this session.
 
 Validate documentation against actual behavior before calling it a match.
 Fix found drift issues only after the user agrees to the proposed changes.
 Keep documentation and comments short, simple and to the point.
 
 
-## run.sh <-> README.md
-- Every `claude_sp_usage()` flag -> in README "Options" list.
-- Every `--build`-only "modifier" flag -> in BOTH the pre-scan loop AND main-loop no-op case.
-- `DOCKER_VOLUMES` (name, path, description) -> matches "What persists" table.
-- `CLAUDE_STATE_DIR` marker files (e.g. `.with-headroom`) -> mentioned in README where relevant.
+## Repo layout (README)
+- Every script, top-level directory, example and workflow -> a row, descriptions still true.
+- Every asset -> referenced by `install.sh` or another asset; `etc_*`/`home_*` names match their install path
+  (`etc_claude-code_X` -> `/etc/claude-code/X`, `home_dot-claude_X` -> `~/.claude/X`).
 
-## Dockerfile <-> README.md
-- Every `COPY`'d `src/claude-sp/assets/*` file -> a "Repo layout" row, with correct mutable/immutable label.
-- `--with-headroom` behavior -> matches README (opt-in, build-time, needs `--build`).
-- User-facing `.bashrc` env vars (`HEADROOM_*`) -> reflected in README if README claims that behavior.
+## install.sh <-> README.md + NOTES.md
+- Claims about what is baked into the image or updated by `--update` (tools, models) -> match `install.sh`.
+- Version pins (pip packages, image digest, download checksums) -> one per architecture handled, and
+  README update instructions still true.
 
-## Dockerfile <-> run.sh <-> README.md
-- `mkdir -p` mount points (Dockerfile) -> cover every `DOCKER_VOLUMES` path (run.sh), character-for-character.
+## devcontainer-feature.json <-> README.md + NOTES.md
+- `containerEnv`, `securityOpt`, `postStartCommand` -> match README "Security" and NOTES claims.
+- Options (if any) -> documented with defaults.
 
-## src/claude-sp/assets/entrypoint.sh <-> README.md
-- MCP marker path (`.mcp-configured-vN`) -> matches Troubleshooting section.
-- mempalace stale-yaml skip behavior -> matches README's NOTE.
-- `configure_mcp()` server list -> matches README's volume table + Verify section.
+## Volumes (README "What persists" + NOTES minimal config)
+- Mount points -> pre-created by `install.sh`'s `mkdir -p` so that volumes get `claude` owner.
+- NOTES example `mounts` -> same volumes and paths as README table.
 
-## Dockerfile <-> src/claude-sp/assets/entrypoint.sh
-- `HOME`-relative paths entrypoint.sh touches -> pre-created by Dockerfile's `mkdir -p`.
+## entrypoint.sh <-> README.md
+- Troubleshooting claims (MCP registration, seeded files, stale `mempalace.yaml`) -> match actual logic.
+- Registered MCP servers -> match README volume table + Verify section.
+- `HOME`-relative paths it touches -> pre-created by `install.sh` or created by the tools themselves.
 
-## Any src/claude-sp/assets/*install-*.sh <-> the settings file it configures
-- Its `statusLine.command` (or equivalent) -> matches what the install script actually installs.
-- Version/checksum pins -> one checksum per architecture the script handles.
+## Managed policy <-> registered tools
+- Tool names in managed `CLAUDE.md`, `settings.json` allow list and hooks -> exist in registered MCP servers / installed CLIs.
+- Settings files' commands (e.g. `statusLine.command`) -> installed by `install.sh` or its helpers.
 
-## Any other src/claude-sp/assets/* file
-- Referenced somewhere (Dockerfile `COPY` or another asset) + has a "Repo layout" row.
+## devcontainer-*.sh <-> README.md
+- Every `usage()` flag and default -> matches README "Usage" script block.
+- Required host tools (e.g. `jq`, Bash version features) -> in README "Requirements".
 
-## TODO.md
-- Any item now implemented in a COMMITTED file (even an untested sketch) -> status updated, not left stale.
-- Uncommitted/untracked files don't count because they are invisible to anyone else using this repo.
+## Feature version
+- Any committed change under `src/claude-sp/` since the last `feature_claude-sp_*` tag -> `version` bumped,
+  otherwise the publish workflow skips it.
+
+## examples/ + .devcontainer/ <-> NOTES.md
+- Required project config (`remoteUser`, `--cap-drop=ALL`, `/workspace/<project>`, volumes) -> present.
 
 ## Output
 

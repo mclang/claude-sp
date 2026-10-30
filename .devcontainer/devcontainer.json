@@ -4,8 +4,8 @@
 // Uses `initializeCommand` to rsync the in-repo feature directly into place instead of downloading
 // it from ghcr.io like devcontainers are normally used. This makes CSP development much easier.
 //
-// Start: `devcontainer up --workspace-folder .`
-// Use:   `devcontainer exec --workspace-folder . bash`
+// Start: `./devcontainer-build.sh`
+// Use:   `./devcontainer-run.sh [--continue]`
 //
 {
     "name": "${localWorkspaceFolderBasename}",
