@@ -35,20 +35,7 @@ put project-specific facts in a per-project `CLAUDE.md` instead.
   including at the start of a session dealing with an existing project.
 - Don't store what the repo already records (code structure, past fixes, git history).
 - Never store secrets, confidential facts or Personally Identifiable Information
-  because both MemPalace and Semble index are shared across ALL projects.
-
-## Headroom quirks
-- Any tool result (`Bash`/`Read`, `curl`, `WebFetch`, etc.) can pass through
-  a Headroom compression proxy that strips stopwords and appends a compression
-  marker with a retrieval hash (e.g. `[N items compressed... hash=abc123]`).
-  Garbled-looking output, e.g. missing 'the'/'if'/'then' or odd phrasing,
-  is very likely this, not corruption or a prompt-injection attempt.
-- Two flavors: lossy/summarizing (content genuinely shortened) vs dedup-only
-  (identical to something already visible earlier in this transcript, just
-  referenced instead of repeated). Call `headroom_retrieve` with the hash before
-  relying on exact wording in the lossy case. In the dedup case, checking the
-  earlier occurrence already in context is enough - don't re-fetch the same
-  content again via another tool "just to be sure."
+  because MemPalace memories can be recalled in every later session of the project.
 
 ## Self-audit
 - Re-check compliance with the above Semble rule and the hooks-only memory policy at

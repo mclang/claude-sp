@@ -46,7 +46,8 @@ install -D -o root -g root -m 444 "$ASSETS/etc_claude-code_managed-settings.json
 install -D -o root -g root -m 555 "$ASSETS/hooks/semble-enforce.sh"               /etc/claude-code/hooks/semble-enforce.sh
 install -D -o root -g root -m 755 "$ASSETS/entrypoint.sh"                         /usr/local/share/claude-sp/entrypoint.sh
 
-# Pre-create volume mount points so that named volumes get right owner.
+# Pre-create as 'claude' so that volumes and mounts over these get the right owner.
+# Cache directories hold baked models.
 run_as_user 'mkdir -p ~/.claude ~/.config ~/.local/bin ~/.mempalace ~/.cache/chroma ~/.cache/semble ~/.cache/huggingface'
 
 run_as_user 'curl -fsSL --retry 5 --retry-all-errors https://claude.ai/install.sh | bash'

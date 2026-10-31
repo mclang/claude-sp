@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Registers MCP servers via Claude Code CLI on first run, then execs the container command.
+# Runs on every container start (`postStartCommand`):
+# - registers MCP servers once
+# - initializes MemPalace per project.
 set -euo pipefail
 
 # Bump version to force re-configuration on existing containers (e.g. when adding a new MCP server).
 # NOTE: Bumping version does NOT help if CHANGING EXISTING registrations!
-# - Feature: registrations (`$CLAUDE_CONFIG_DIR/.claude.json`) and marker are both on the claude volume.
-# - run.sh: registrations live in the HOST `.claude.json`, marker on the `claude-data` VOLUME.
-#   ==> clearing only ONE does NOTHING: Delete BOTH (or run `--clean`) to re-register from scratch.
+# Registrations (`$CLAUDE_CONFIG_DIR/.claude.json`) and marker are both on the claude volume.
 CLAUDE_MCP_CONFIGURED="$HOME/.claude/.mcp-configured-v1"
 
 MEMPALACE_PALACE_DIR="$HOME/.mempalace/palace"
@@ -25,8 +25,8 @@ configure_mcp() {
 [[ -f "$CLAUDE_MCP_CONFIGURED" ]] || configure_mcp
 
 # Initialize MemPalace for the current project if not yet tracked.
-# - `mempalace.yaml`: Lives in project dir, survives `--clean`
-# - `chroma.sqlite3`: Lives in MemPalace data volume and gets thus deleted when `--clean` is run
+# - `mempalace.yaml`: Lives in project dir
+# - `chroma.sqlite3`: Lives in MemPalace volume
 #
 # NOTES:
 # - A project with a stale `mempalace.yaml` file but an already-populated palace
@@ -36,6 +36,4 @@ if [[ ! -f "$PWD/mempalace.yaml" || ! -f "${MEMPALACE_PALACE_DIR}/chroma.sqlite3
     mempalace init --yes --no-llm "$PWD" </dev/null
     mempalace mine "$PWD"
 fi
-
-exec "$@"
 
