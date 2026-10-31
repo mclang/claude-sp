@@ -1,28 +1,20 @@
 #!/usr/bin/env bash
 # Runs on every container start (`postStartCommand`):
-# - registers MCP servers once
+# - registers missing MCP servers
 # - initializes MemPalace per project.
 set -euo pipefail
 
-# Bump version to force re-configuration on existing containers (e.g. when adding a new MCP server).
-# NOTE: Bumping version does NOT help if CHANGING EXISTING registrations!
-# Registrations (`$CLAUDE_CONFIG_DIR/.claude.json`) and marker are both on the claude volume.
-CLAUDE_MCP_CONFIGURED="$HOME/.claude/.mcp-configured-v1"
-
 MEMPALACE_PALACE_DIR="$HOME/.mempalace/palace"
 
-configure_mcp() {
-    # NOTE: declared separately because `local x=$(cmd)` would mask cmd's exit status (shellcheck SC2155)
-    local mcp_servers
-    mcp_servers=$(claude mcp list)
-    # `--scope user` registers the servers for ALL projects; default `local` scope would be per-project only.
-    # Semble `--content all` indexes also docs/config files, not just code (default `--content code`).
-    echo "$mcp_servers" | grep -q "^semble:"    || claude mcp add --scope user semble semble -- --content all
-    echo "$mcp_servers" | grep -q "^mempalace:" || claude mcp add --scope user mempalace mempalace-mcp -- --palace "$MEMPALACE_PALACE_DIR"
-    touch "$CLAUDE_MCP_CONFIGURED"
-}
+# Reads `.claude.json` directly b/c `claude mcp list` health-checks every server (takes ~7s).
+mcp_status() { jq -e --arg s "$1" '.mcpServers[$s]' "$CLAUDE_CONFIG_DIR/.claude.json" &>/dev/null; }
 
-[[ -f "$CLAUDE_MCP_CONFIGURED" ]] || configure_mcp
+# NOTES:
+# - Use `--scope user` so that servers work in ANY directory of the container (default `local` binds them to one path)
+# - Semble `--content all` indexes also docs/config files, not just code (default `--content code`)
+# - Existing registrations are NOT changed. Run `claude mcp remove <name>` and restart to start with new args
+mcp_status semble    || claude mcp add --scope user semble semble -- --content all
+mcp_status mempalace || claude mcp add --scope user mempalace mempalace-mcp -- --palace "$MEMPALACE_PALACE_DIR"
 
 # Initialize MemPalace for the current project if not yet tracked.
 # - `mempalace.yaml`: Lives in project dir

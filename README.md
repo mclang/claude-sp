@@ -63,7 +63,7 @@ publishes the Feature that devcontainers can pull. An unchanged version is skipp
 
 | Volume                | Path in container | Contents                                                                      |
 |-----------------------|-------------------|-------------------------------------------------------------------------------|
-| `<project>-claude`    | `~/.claude`       | Settings, login, session transcripts, MCP registrations + marker, `semble-search` sub-agent |
+| `<project>-claude`    | `~/.claude`       | Settings, login, session transcripts, MCP registrations, `semble-search` sub-agent |
 | `<project>-mempalace` | `~/.mempalace`    | MemPalace memory palace                                                       |
 
 Semble + MemPalace models are baked into the image, indexes are container-local (rebuilt in seconds).
@@ -71,9 +71,8 @@ Semble + MemPalace models are baked into the image, indexes are container-local 
 
 ### Troubleshooting
 
-- MCP servers are registered only once per claude volume, gated by `~/.claude/.mcp-configured-v1`.
-  To re-register ONE server, run `claude mcp remove <name>` and delete the marker: the entrypoint
-  re-adds it on the next start.
+- Missing MCP servers are registered on every container start. To re-register one, e.g. with changed
+  arguments, run `claude mcp remove <name>` and restart the container.
 - Seeded `settings.json` and `semble-search` sub-agent reach the claude volume only when it is created.
   Managed policy (`/etc/claude-code/`) is not in a volume, `--rebuild` (CSP) or `devcontainer-build.sh --update` (published Feature) updates it.
 - A leftover `mempalace.yaml` skips the auto-mine **if** the MemPalace volume exists already: memory
