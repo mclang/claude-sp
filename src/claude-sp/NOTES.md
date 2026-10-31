@@ -37,6 +37,8 @@ Compose: same things in `compose.yaml` + `devcontainer.json`, see `examples/ansi
 Additional Notes:
 - Add `mempalace.yaml` and `entities.json` to `.gitignore` (created on first start)
 - Log in once per project with `claude auth login` or `/login` inside Claude
+- Optional resource limits, e.g. `runArgs` `--memory=8g`, `--pids-limit=512`, `--cpus=4`
+  (compose: `mem_limit`, `pids_limit`, `cpus`), Features can't set these
 
 
 ## Sandbox Security
