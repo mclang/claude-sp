@@ -1,52 +1,48 @@
-# Claude Sandboxed Plus Global Guidance
+# Claude Sandboxed Plus Guidance
 
-Global Claude guidance file that is inserted into the created container. Instructions here
-will apply to every project that gets mounted under `/workspace`. Keep this file short and
-put project-specific facts in a per-project `CLAUDE.md` instead.
+## Communication
+- Be concise: answer first, no padding.
+- Ask clarifying questions when the request is ambiguous and a wrong guess would
+  be costly. Otherwise act.
+- Treat secrets, credentials and PII as sensitive: don't echo them or send them
+  to external services, and flag insecure patterns you notice.
 
 ## Editing files
-- Never edit or write a file before user has explicitly confirmed the specific change.
-  This applies to every project, every file and every time in a session except when user
-  clearly allows all further edits to the file or files in current session. Question
-  like "How do I fix X" is a request for a diagnosis/plan, not authorization to edit.
+- Never edit or write a file before the user has confirmed the specific change,
+  unless they have allowed all further edits to that file or files for the session.
+- Question like "How do I fix X?" is a request for a diagnosis or plan, not an
+  authorization to make direct edits without asking first.
+- Keep edits minimal, change only what the task needs. Don't reword, re-wrap,
+  reorder or rename untouched text, so diffs stay small.
 
-## Code navigation: Semble is mandatory before external-repo lookups
-- BEFORE any `curl`/`WebFetch`/`raw-source` lookup against a repo you don't have
-  open locally, you MUST first call `semble search`/`find_related` on that repo
-  (pass the repo root or GitHub URL as `repo`).
+## Semble before external lookups
+- Before any `curl`/`WebFetch` or raw-source lookup against a repo not open locally,
+  call Semble `search`/`find_related` on it (repo root or GitHub URL as `repo`).
   Only fall back to `curl`/`WebFetch` if Semble returns nothing usable.
 - Exceptions (no Semble needed): an exact known string/symbol (use `ripgrep`),
-  a file you already have the path for (just read it), or code you changed this
-  session (index can lag - read directly).
-- For broad/exploratory research (e.g. reviewing a whole config against multiple
-  upstream repos), delegate to the `semble-search` sub-agent so bulky results
-  don't bloat the main context. Don't pull large reference docs directly into
-  context yourself when a sub-agent call would do.
+  a file with a known path (just read it), or file changed this session
+  (index can lag - read directly).
+- For broad research e.g across multiple repos: delegate to the `semble-search`
+  sub-agent to keep bulky results out of the main context.
 
-## Durable memory: MemPalace, hooks-only writes
-- Never write durable cross-session facts into the built-in file-memory system,
-  instead use MemPalace only.
-- Do not call or use MemPalace's mutating tools like `mempalace_checkpoint`,
-  `mempalace_diary_write`, `mempalace_kg_add`, `mempalace_add_drawer`,
-  `mempalace_update_drawer`, etc. during a session because the Stop/SessionEnd
-  hooks (wired in `managed-settings.json`) do all writes automatically and
-  a second writer racing them for the palace lock will break things up.
-- Using read-only calls (`mempalace_search`/`mempalace_kg_query`) is fine anytime,
-  including at the start of a session dealing with an existing project.
-- Don't store what the repo already records (code structure, past fixes, git history).
-- Never store secrets, confidential facts or Personally Identifiable Information
-  because MemPalace memories can be recalled in every later session of the project.
+## Memory: MemPalace, hooks write
+- Use only MemPalace for durable cross-session facts, never the built-in file memory.
+- Do not call MemPalace's mutating `mempalace_*` tools (checkpoint, diary_write,
+  kg_add, add_drawer, update_drawer, ...) during a session because the Stop/SessionEnd
+  hooks do writing automatically and a second writer will introduce palace lock race.
+- Using read-only calls `mempalace_search`/`mempalace_kg_query` is fine anytime.
+- Don't store what the repo already records (code structure, fixes, git history),
+  or secrets/PII because memories will be recalled in every later session.
 
-## Self-audit
-- Re-check compliance with the above Semble rule and the hooks-only memory policy at
-  every natural stopping point in a session - treat it as part of finishing the turn.
-- If you find you skipped a needed Semble search, say so immediately and make
-  the missed call right then, in the same turn.
-- If you catch yourself about to call a MemPalace mutating tool, STOP -
-  saving is now the hooks' job, NOT yours.
+## Technical honesty
+- Verify before claiming anything about a tool, package, image, version, size or speed.
+  If not cheaply checkable using few quick commands or file/doc read, say "unverified",
+  or ask before running anything slow or heavy (builds, large downloads, full installs).
+- Give opinions and alternatives when they make code or logic simpler, more robust
+  or more secure, backed by checked facts.
 
 ## Token discipline
-- A tool call earns its place only when it prevents more work than it costs.
-- Don't force Semble/MemPalace for trivial lookups but don't skip them for a
-  non-trivial one either, out of habit.
+- A tool call must prevent more work than it costs.
+- Skip Semble/MemPalace for trivial lookups, but don't skip them for
+  non-trivial ones either out of habit.
 
