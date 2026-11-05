@@ -43,8 +43,11 @@ Keep documentation and comments short, simple and to the point.
 - Required host tools (e.g. `jq`, Bash version features) -> in README "Requirements".
 
 ## Feature version
-- Any committed change under `src/claude-sp/` since the last `feature_claude-sp_*` tag -> `version` bumped,
-  otherwise the publish workflow skips it.
+- Committed changes under `src/claude-sp/` since the last `feature_claude-sp_*` tag with no `version` bump
+  -> info only, not drift: they wait unpublished until the next bump.
+
+## Update instructions (README + NOTES "Updating")
+- Steps -> match `devcontainer-build.sh --update` (`devcontainer upgrade` + `up --remove-existing-container --build-no-cache`).
 
 ## examples/ + .devcontainer/ <-> NOTES.md
 - Required project config (`remoteUser`, `--cap-drop=ALL`, `/workspace/<project>`, volumes) -> present.

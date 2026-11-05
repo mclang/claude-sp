@@ -36,7 +36,8 @@ Created with the help of coffee, 8-bit gaming music, and Claude.
 ## Usage
 
 Projects can use the published Feature through devcontainer features.
-See `src/claude-sp/NOTES.md` for the required config and `examples/ansible/` for a compose setup:
+See [NOTES](src/claude-sp/NOTES.md) for the required config and [Ansible example](examples/ansible/)
+for a compose setup:
 ```jsonc
 "features": { "ghcr.io/mclang/claude-sp/claude-sp:0": {} }
 ```
@@ -55,8 +56,8 @@ and `mempalace.yaml` into the project directory, which both should be added into
 
 Releasing new CSP Feature version:
 
-Bump `version` in `src/claude-sp/devcontainer-feature.json` and make a PR. Merging it to `main`
-publishes the Feature that devcontainers can pull. An unchanged version is skipped.
+Bump `version` in [devcontainer-feature.json](src/claude-sp/devcontainer-feature.json) and make a PR.
+Merging it to `main` publishes the Feature that devcontainers can pull. An unchanged version is skipped.
 
 
 ### What persists (named volumes)
@@ -74,7 +75,9 @@ Semble + MemPalace models are baked into the image, indexes are container-local 
 - Missing MCP servers are registered on every container start. To re-register one, e.g. with changed
   arguments, run `claude mcp remove <name>` and restart the container.
 - Seeded `settings.json` and `semble-search` sub-agent reach the claude volume only when it is created.
-  Managed policy (`/etc/claude-code/`) is not in a volume, `--rebuild` (CSP) or `devcontainer-build.sh --update` (published Feature) updates it.
+  Managed policy files (`/etc/claude-code/`) are not in a named volume, they get updated whenever
+  `devcontainer-build.sh --rebuild` (CSP) or `--update` (published Features) is run. Check plain
+  `devcontainer` commands from [NOTES](src/claude-sp/NOTES.md).
 - A leftover `mempalace.yaml` skips the auto-mine **if** the MemPalace volume exists already: memory
   starts empty. Delete the file or run `mempalace mine .` by hand.
 

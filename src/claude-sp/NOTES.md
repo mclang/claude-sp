@@ -41,6 +41,16 @@ Additional Notes:
   (compose: `mem_limit`, `pids_limit`, `cpus`), Features can't set these
 
 
+## Updating
+
+Feature version is pinned in `devcontainer-lock.json`. To get a new release:
+
+```bash
+devcontainer upgrade --workspace-folder .
+devcontainer up --workspace-folder . --remove-existing-container --build-no-cache
+```
+
+
 ## Sandbox Security
 
 Feature installs these as root-owned read-only files in `/etc/claude-code`:
