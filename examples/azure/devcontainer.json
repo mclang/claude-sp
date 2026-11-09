@@ -1,0 +1,29 @@
+//
+// Example `devcontainer.json` file for Azure/AKS development
+// (Azure CLI, kubectl, kubelogin, helm, kubectx, kubens, k9s)
+//
+// Setup:
+// 1. Create `<project>/.devcontainer/`
+// 2. Copy files in this directory to the above directory
+// 3. Build devcontainer: `devcontainer up --workspace-folder .`
+// 4. Run the container:  `devcontainer exec --workspace-folder . bash`
+// 5. Log in inside the container: `az login --use-device-code`, then `az aks get-credentials ...`
+//
+// NOTE: `~/.azure` and `~/.kube` are NOT persisted: login is lost when the container is recreated.
+//
+{
+    "name": "${localWorkspaceFolderBasename}",
+    "build": { "dockerfile": "Dockerfile" },
+    "features": {
+        "ghcr.io/mclang/claude-sp/claude-sp:0": {}
+    },
+    "remoteUser": "claude",
+    "runArgs": ["--cap-drop=ALL", "--name=${localWorkspaceFolderBasename}"],
+    "workspaceMount": "source=${localWorkspaceFolder},target=/workspace/${localWorkspaceFolderBasename},type=bind",
+    "workspaceFolder": "/workspace/${localWorkspaceFolderBasename}",
+    "mounts": [
+        "source=${localWorkspaceFolderBasename}-claude,target=/home/claude/.claude,type=volume",
+        "source=${localWorkspaceFolderBasename}-mempalace,target=/home/claude/.mempalace,type=volume",
+        "source=${localEnv:HOME}/.config/git,target=/home/claude/.config/git,type=bind,readonly"
+    ]
+}

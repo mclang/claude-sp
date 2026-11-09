@@ -27,7 +27,7 @@ Created with the help of coffee, 8-bit gaming music, and Claude.
 | `devcontainer-run.sh`   | Opens bash (or continues Claude) in a project's running devcontainer             |
 | `src/claude-sp/`        | Feature: `install.sh`, `NOTES.md`, `assets/entrypoint.sh` (MCP + MemPalace init) |
 | `src/claude-sp/assets/` | Files installed into the image, e.g. `etc_claude-code_X` -> `/etc/claude-code/X` |
-| `examples/`             | Example setups, e.g. `ansible`: compose with Claude sandbox + Ubuntu test target |
+| `examples/`             | Example setups: `ansible` (compose + Ubuntu test target), `azure` (AKS tooling)  |
 | `.devcontainer/`        | CSP's own dev container: develops the Feature straight from `src/claude-sp/`     |
 | `.claude/skills/`       | Project skills for Claude, e.g. `validate-docs`                                  |
 | `.github/workflows/`    | Publishes the Feature to ghcr on merge to `main` (new versions only)             |
